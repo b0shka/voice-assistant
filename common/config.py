@@ -1,6 +1,9 @@
 import logging
 import os
+from dotenv import load_dotenv
 
+
+load_dotenv()
 
 if not os.path.exists('info'):
 	os.mkdir('info')

@@ -18,6 +18,8 @@ class Telegram:
 
 	async def check_new_messages(self):
 		try:
+			logger.info('Start check new messages in Telegram')
+
 			@self.client.on(events.NewMessage())
 			async def handler(event):
 				message = event.message.to_dict()

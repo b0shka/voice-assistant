@@ -29,7 +29,9 @@ class Assistant:
 	def monitoring(self, loop):
 		try:
 			asyncio.set_event_loop(loop)
-			loop.run_until_complete(self.telegram.check_new_messages())
+			#loop.run_until_complete(self.telegram.check_new_messages())
+			#loop.run_until_complete(self.vk.check_new_messages())
+			loop.run_until_complete(self.yandex.check_new_messages())
 		except Exception as e:
 			logger.error(e)
 

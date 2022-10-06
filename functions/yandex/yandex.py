@@ -10,7 +10,7 @@ class Yandex:
 			logger.error(e)
 
 
-	def check_new_messages(self):
+	async def check_new_messages(self):
 		try:
 			pass
 		except Exception as e:
