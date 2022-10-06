@@ -9,19 +9,19 @@ class Database:
 		try:
 			self.db = sqlite3.connect(PATH_FILE_DB)
 			self.sql = self.db.cursor()
-			self.create_tables()
 			logger.info('Success initializate database')
+			self.create_tables()
 		except Exception as e:
 			logger.error(e)
 
 
 	def create_tables(self):
 		try:
-			self.sql.execute(f"""CREATE TABLE IF NOT EXISTS `{TABLE_TASKS}` (
-							id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
+			self.sql.execute(f"""CREATE TABLE IF NOT EXISTS `{TABLE_MESSAGES}` (
+							id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 							task TEXT,
 							time DATETIME DEFAULT CURRENT_TIMESTAMP);""")
 			self.db.commit()
-			logger.info(f'Создана таблица {TABLE_TASKS} в БД')
+			logger.info(f'Create table if not exists {TABLE_MESSAGES} in database')
 		except Exception as e:
 			logger.error(e)
