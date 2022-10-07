@@ -14,20 +14,6 @@ class VK:
 			logger.error(e)
 
 
-	async def check_new_messages(self):
-		try:
-			logger.info('Start check new messages in VK')
-
-			for event in await self.longpoll.listen():
-				if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
-					print(event.text)
-					print(event.from_user)
-					print(event.peer_id)
-					print(event.user_id)
-		except Exception as e:
-			logger.error(e)
-
-
 	def send_message(self, user_id, message):
 		try:
 			self.session.method(
