@@ -1,4 +1,5 @@
 import asyncio
+import threading
 import vk_api
 from telethon.sync import TelegramClient, events
 from vk_api.longpoll import VkLongPoll, VkEventType
@@ -49,11 +50,11 @@ class Monitoring:
 			logger.error(e)
 
 
-	async def check_vk(self):
+	def check_vk(self):
 		try:
 			logger.info('Start check new messages in VK')
 			
-			for event in await self.longpoll.listen():
+			for event in self.longpoll.listen():
 				if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
 					if event.from_user and event.user_id in [i[4] for i in self.contacts]:
 						result = self.db.add_vk_message(event.text, event.user_id)
@@ -69,11 +70,14 @@ class Monitoring:
 			if self.contacts == 0:
 				logger.error(ERROR_GET_CONTACTS)
 
+			check_vk = threading.Thread(target=self.check_vk)
+			check_vk.start()
+
 			loop = asyncio.new_event_loop()
 			asyncio.set_event_loop(loop)
-
 			loop.run_until_complete(self.check_telegram())
 			#loop.run_until_complete(self.check_vk())
+			#asyncio.create_task(self.check_vk())
 		except Exception as e:
 			logger.error(e)
 
