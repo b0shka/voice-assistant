@@ -29,7 +29,6 @@ def say(text):
 		put_accent=put_accent,
 		put_yo=put_yo
 	)
-	print('good')
 
 	sd.play(audio, sample_rate)
 	time.sleep(len(audio) / sample_rate)

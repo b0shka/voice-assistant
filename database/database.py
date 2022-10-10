@@ -9,8 +9,7 @@ class Database:
 		try:
 			self.db = sqlite3.connect(PATH_FILE_DB, check_same_thread=False)
 			self.sql = self.db.cursor()
-			logger.info('Success initializate database')
-			self.create_tables()
+			logger.info('Success connect database')
 		except Exception as e:
 			logger.error(e)
 
@@ -42,6 +41,12 @@ class Database:
 							telegram_id INTEGER,
 							vk_id INTEGER NOT NULL,
 							email VARCHAR(255));""")
+
+			self.sql.execute(f"""CREATE TABLE IF NOT EXISTS `{TABLE_REQUESTS_ANSWERS}` (
+							id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+							text TEXT NOT NULL,
+							type VARCHAR(10) NOT NULL,
+							time DATETIME DEFAULT CURRENT_TIMESTAMP);""")
 
 			self.db.commit()
 			logger.info(f'Create table if not exists {TABLE_TELEGRAM_MESSAGES}, {TABLE_VK_MESSAGES}, {TABLE_YANDEX_MESSAGES} in database')
@@ -98,6 +103,28 @@ class Database:
 			self.sql.execute(f"SELECT * FROM {TABLE_VK_MESSAGES};")
 			messages = self.sql.fetchall()
 			return messages
+		except Exception as e:
+			logger.error(e)
+			return 0
+
+
+	def add_request_answer_assistant(self, text, type):
+		try:
+			self.sql.execute(f"INSERT INTO {TABLE_REQUESTS_ANSWERS} (text, type) VALUES (?, ?);", (text, type))
+			self.db.commit()
+
+			logger.info(f"Добавлена новая запись типа {type}")
+			return 1
+		except Exception as e:
+			logger.error(e)
+			return 0
+
+
+	def get_requests_answers(self):
+		try:
+			self.sql.execute(f"SELECT * FROM {TABLE_REQUESTS_ANSWERS};")
+			requests_answers = self.sql.fetchall()
+			return requests_answers
 		except Exception as e:
 			logger.error(e)
 			return 0
