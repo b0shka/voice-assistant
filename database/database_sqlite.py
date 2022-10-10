@@ -3,7 +3,7 @@ from common.config import *
 from common.tables import *
 
 
-class Database:
+class DatabaseSQLite:
 	
 	def __init__(self):
 		try:
@@ -125,6 +125,19 @@ class Database:
 			self.sql.execute(f"SELECT * FROM {TABLE_REQUESTS_ANSWERS};")
 			requests_answers = self.sql.fetchall()
 			return requests_answers
+		except Exception as e:
+			logger.error(e)
+			return 0
+
+
+	def delete_old_requests_answer(self, requests_answers):
+		try:
+			for i in requests_answers:
+				self.sql.execute(f"DELETE FROM {TABLE_REQUESTS_ANSWERS} WHERE id = {i[0]};")
+
+			self.db.commit()
+			logger.info("Очищены старые запросы/ответы")
+			return 1
 		except Exception as e:
 			logger.error(e)
 			return 0
