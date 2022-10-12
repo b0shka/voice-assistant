@@ -1,6 +1,6 @@
 import threading
-from assistant.assistant import Assistant
-from common.config import logger
+from app.assistant import Assistant
+from utils.logging import logger
 
 
 def main():

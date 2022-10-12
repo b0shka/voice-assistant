@@ -1,5 +1,6 @@
 from telethon.sync import TelegramClient, events
 from common.config import *
+from utils.logging import logger
 
 
 class Telegram:

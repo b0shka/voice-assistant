@@ -1,6 +1,7 @@
 import sqlite3
 from common.config import *
 from common.tables import *
+from utils.logging import logger
 
 
 class DatabaseSQLite:

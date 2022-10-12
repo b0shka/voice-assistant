@@ -7,14 +7,15 @@ import sys
 sys.path.append('/home/q/p/projects/voice-assistant/version_2.0')
 from common.config import *
 from common.errors import *
-from database.database import Database
+from database.database_sqlite import DatabaseSQLite
+from utils.logging import logger
 
 
 class Monitoring:
 
 	def __init__(self):
 		try:
-			self.db = Database()
+			self.db = DatabaseSQLite()
 
 			self.client = TelegramClient(
 				PATH_FILE_SESSION_TELEGRAM, 

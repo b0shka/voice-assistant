@@ -1,4 +1,5 @@
 from common.config import *
+from utils.logging import logger
 
 
 class Yandex:
