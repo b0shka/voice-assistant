@@ -1,5 +1,4 @@
 settings/
 logs/
 .env
-utils/speech/vosk-model-ru/
-utils/speech/vosk-model-small-ru/
+utils/speech/models/

@@ -1,11 +1,11 @@
 import io
 import wave
 import pyaudio
-from speechkit import ShortAudioRecognition
-from utils.speech.config import session
+import speech_recognition as sr
 
 
-recognizeShortAudio = ShortAudioRecognition(session)
+r = sr.Recognizer()
+m = sr.Microphone()
 
 sample_rate = 16000
 chunk_size = 4000
@@ -22,7 +22,7 @@ def record_audio(seconds):
 		frames_per_buffer=8000
 	)
 	frames = []
-
+	
 	try:
 		for _ in range(0, int(sample_rate / chunk_size * seconds)):
 			data = stream.read(chunk_size)
@@ -42,6 +42,16 @@ def record_audio(seconds):
 	return container
 
 
-data = record_audio(3)
-text = recognizeShortAudio.recognize(data, format='lpcm', sampleRateHertz=sample_rate)
-print(text)
+#data = record_audio(3)
+
+with m as source:
+	r.adjust_for_ambient_noise(source, 1)
+	print("Say something")
+	audio = r.listen(source)
+
+try:
+	print(r.recognize_google(audio, language='ru-RU'))
+except sr.UnknownValueError:
+	print("Google Speech Recognition could not understand audio")
+except sr.RequestError as e:
+	print(f"Could not request results from Google Speech Recognition service; {e}")

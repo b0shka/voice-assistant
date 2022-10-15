@@ -1,9 +1,8 @@
 import pyaudio
-from speechkit import Session, SpeechSynthesis
-from common.config import YANDEX_OAUTH_TOKEN, YANDEX_CATALOG_ID
+from speechkit import SpeechSynthesis
+from utils.speech.config import session
 
 
-session = Session.from_yandex_passport_oauth_token(YANDEX_OAUTH_TOKEN, YANDEX_CATALOG_ID)
 synthesizeAudio = SpeechSynthesis(session)
 
 num_channels = 1

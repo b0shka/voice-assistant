@@ -3,6 +3,7 @@ from database.database_sqlite import DatabaseSQLite
 from common.errors import *
 from utils.logging import logger
 from utils.speech.yandex_synthesis import synthesis_text
+from utils.speech.vosk_recognition import listen
 from handlers.handlers import Handlers
 
 
@@ -23,13 +24,18 @@ class Assistant:
 
 	def start(self):
 		try:
-			while True:
-				request = input('Enter: ')
-				self.handlers.processing(request)
+			for command in listen():
+				print(command)
 
-				result = self.db.add_request_answer_assistant(request, 'request')
-				if result == 0:
-					logger.error(ERROR_ADD_REQUEST_ANSWER)
+				if 'закончить' in command:
+					synthesis_text('до скорой встречи')
+					break
+				else:
+					self.handlers.processing(command)
+					result = self.db.add_request_answer_assistant(command, 'request')
+					if result == 0:
+						logger.error(ERROR_ADD_REQUEST_ANSWER)
+
 		except Exception as e:
 			logger.error(e)
 
@@ -50,14 +56,14 @@ class Assistant:
 						answer = f'У вас одно новое сообщение в Телеграм'
 					else:
 						answer = f'У вас {len(telegram_messages)} новых сообщений в Телеграм'
-					synthesis_text(answer)
+					#synthesis_text(answer)
 
 				if len(vk_messages):
 					if len(vk_messages) == 1:
 						answer = f'У вас одно новое сообщение в Вконтакте'
 					else:
 						answer = f'У вас {len(vk_messages)} новых сообщений в Вконтакте'
-					synthesis_text(answer)
+					#synthesis_text(answer)
 
 				self.last_requests_answers = self.db.get_requests_answers()
 				if len(self.last_requests_answers) > 10:
