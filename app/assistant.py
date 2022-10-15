@@ -1,8 +1,8 @@
 import time
 from database.database_sqlite import DatabaseSQLite
-from utils.speech.synthesizer import say
 from common.errors import *
 from utils.logging import logger
+from utils.speech.yandex_synthesis import synthesis_text
 from handlers.handlers import Handlers
 
 
@@ -46,12 +46,18 @@ class Assistant:
 					logger.error(ERROR_GET_VK_MESSAGES)
 
 				if len(telegram_messages):
-					answer = f'У вас {len(telegram_messages)} сообщений в Телеграм'
-					#say(answer)
+					if len(telegram_messages) == 1:
+						answer = f'У вас одно новое сообщение в Телеграм'
+					else:
+						answer = f'У вас {len(telegram_messages)} новых сообщений в Телеграм'
+					synthesis_text(answer)
 
 				if len(vk_messages):
-					answer = f'У вас {len(vk_messages)} сообщений в Вконтакте'
-					#say(answer)
+					if len(vk_messages) == 1:
+						answer = f'У вас одно новое сообщение в Вконтакте'
+					else:
+						answer = f'У вас {len(vk_messages)} новых сообщений в Вконтакте'
+					synthesis_text(answer)
 
 				self.last_requests_answers = self.db.get_requests_answers()
 				if len(self.last_requests_answers) > 10:
