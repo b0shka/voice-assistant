@@ -1,8 +1,9 @@
 from database.database_sqlite import DatabaseSQLite
-#from services.telegram.telegram import Telegram
-#from services.vk.vk import VK
-#from services.yandex.yandex import Yandex
+from services.telegram.telegram import Telegram
+from services.vk.vk import VK
+from services.yandex.yandex import Yandex
 from utils.logging import logger
+from utils.speech.synthesizer import say
 from common.errors import *
 from handlers.list_requests import *
 
