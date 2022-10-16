@@ -109,6 +109,30 @@ class DatabaseSQLite:
 			return 0
 
 
+	def delete_telegram_message(self, id):
+		try:
+			self.sql.execute(f"DELETE FROM {TABLE_TELEGRAM_MESSAGES} WHERE id = {id};")
+
+			self.db.commit()
+			logger.info("Удалено новое сообщение из Telegram")
+			return 1
+		except Exception as e:
+			logger.error(e)
+			return 0
+
+
+	def delete_vk_message(self, id):
+		try:
+			self.sql.execute(f"DELETE FROM {TABLE_VK_MESSAGES} WHERE id = {id};")
+
+			self.db.commit()
+			logger.info("Удалено новое сообщение из ВКонтакте")
+			return 1
+		except Exception as e:
+			logger.error(e)
+			return 0
+
+
 	def add_request_answer_assistant(self, text, type):
 		try:
 			self.sql.execute(f"INSERT INTO {TABLE_REQUESTS_ANSWERS} (text, type) VALUES (?, ?);", (text, type))

@@ -24,17 +24,18 @@ class Assistant:
 
 	def start(self):
 		try:
-			for command in listen():
-				print(command)
+			pass
+			#for command in listen():
+			#	print(command)
 
-				if 'закончить' in command:
-					synthesis_text('до скорой встречи')
-					break
-				else:
-					self.handlers.processing(command)
-					result = self.db.add_request_answer_assistant(command, 'request')
-					if result == 0:
-						logger.error(ERROR_ADD_REQUEST_ANSWER)
+			#	if 'закончить' in command:
+			#		synthesis_text('до скорой встречи')
+			#		break
+			#	else:
+			#		self.handlers.processing(command)
+			#		result = self.db.add_request_answer_assistant(command, 'request')
+			#		if result == 0:
+			#			logger.error(ERROR_ADD_REQUEST_ANSWER)
 
 		except Exception as e:
 			logger.error(e)
@@ -47,23 +48,37 @@ class Assistant:
 				if telegram_messages == 0:
 					logger.error(ERROR_GET_TELEGRAM_MESSAGES)
 
+				if len(telegram_messages):
+					if str(len(vk_messages))[-1] == '1':
+						answer = 'У вас одно новое сообщение в Телеграм'
+					elif str(len(vk_messages))[-1] in ('2', '3', '4'):
+						answer = f'У вас {len(telegram_messages)} новых сообщения в Телеграм'
+					else:
+						answer = f'У вас {len(telegram_messages)} новых сообщений в Телеграм'
+					synthesis_text(answer)
+					
+					for message in telegram_messages:
+						result = self.db.delete_telegram_message(message[0])
+						if result == 0:
+							logger.error(ERROR_DELETE_NEW_TELEGRAM_MESSAGE)
+
 				vk_messages = self.db.get_vk_messages()
 				if vk_messages == 0:
 					logger.error(ERROR_GET_VK_MESSAGES)
 
-				if len(telegram_messages):
-					if len(telegram_messages) == 1:
-						answer = f'У вас одно новое сообщение в Телеграм'
-					else:
-						answer = f'У вас {len(telegram_messages)} новых сообщений в Телеграм'
-					#synthesis_text(answer)
-
 				if len(vk_messages):
-					if len(vk_messages) == 1:
-						answer = f'У вас одно новое сообщение в Вконтакте'
+					if str(len(vk_messages))[-1] == '1':
+						answer = 'У вас одно новое сообщение в Вконтакте'
+					elif str(len(vk_messages))[-1] in ('2', '3', '4'):
+						answer = f'У вас {len(vk_messages)} новых сообщения в Вконтакте'
 					else:
 						answer = f'У вас {len(vk_messages)} новых сообщений в Вконтакте'
-					#synthesis_text(answer)
+					synthesis_text(answer)
+
+					for message in vk_messages:
+						result = self.db.delete_vk_message(message[0])
+						if result == 0:
+							logger.error(ERROR_DELETE_NEW_VK_MESSAGE)
 
 				self.last_requests_answers = self.db.get_requests_answers()
 				if len(self.last_requests_answers) > 10:
