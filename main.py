@@ -1,16 +1,17 @@
 import threading
 from app.assistant import Assistant
+from app.monitoring import Monitoring
 from utils.logging import logger
 
 
 def main():
 	try:
 		assistant = Assistant()
-		monitoring = threading.Thread(target=assistant.monitoring)
+		monitoring = Monitoring()
+		monitoring_thread = threading.Thread(target=monitoring.start)
 
-		monitoring.start()
+		monitoring_thread.start()
 		assistant.start()
-		#asyncio.run(assistant.start())
 	except Exception as e:
 		logger.error(e)
 

@@ -33,6 +33,10 @@ class Handlers:
 				not_found_command = ('Меня еще этому не научили', 'Я не знаю про что вы', 'У меня нет ответа', 'Я еще этого не умею', 'Беспонятия про что вы')
 				synthesis_text(choice(not_found_command))
 
+			result = self.db.add_request_answer_assistant(command, 'request')
+			if result == 0:
+				logger.error(ERROR_ADD_REQUEST_ANSWER)
+
 			if answer:
 				result = self.db.add_request_answer_assistant(answer, 'answer')
 				if result == 0:
