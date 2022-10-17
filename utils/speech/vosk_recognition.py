@@ -32,10 +32,23 @@ def listen():
 		while True:
 			if not states.get_synthesis_work_state():
 				data = stream.read(4000, exception_on_overflow=False)
-				if rec.AcceptWaveform(data) and len(data) > 0:
-					answer = json.loads(rec.Result())
-					if answer['text']:
-						yield answer['text']
+
+				if len(data) != 0:
+					if rec.AcceptWaveform(data):
+						answer = json.loads(rec.Result())
+						if answer['text']:
+							yield {
+								'text': answer['text'],
+								'mode': 'finite'
+							}
+					else:
+						answer = json.loads(rec.PartialResult())
+						if answer['partial']:
+							yield {
+								'text': answer['partial'],
+								'mode': 'intermediate'
+							}
+						
 	finally:
 		stream.stop_stream()
 		stream.close()
