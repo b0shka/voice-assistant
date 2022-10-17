@@ -1,6 +1,7 @@
 import time
 from utils.logging import logger
 from common.errors import *
+from common.states import states
 from database.database_sqlite import DatabaseSQLite
 from utils.speech.yandex_synthesis import synthesis_text
 
@@ -33,12 +34,14 @@ class Monitoring:
 					answer = f'У вас {count_telegram_messages} новых сообщения в Телеграм'
 				else:
 					answer = f'У вас {count_telegram_messages} новых сообщений в Телеграм'
+				
 				synthesis_text(answer)
 
 				for message in telegram_messages:
 					result = self.db.delete_telegram_message(message[0])
 					if result == 0:
 						logger.error(ERROR_DELETE_NEW_TELEGRAM_MESSAGE)
+
 		except Exception as e:
 			logger.error(e)
 
@@ -57,12 +60,14 @@ class Monitoring:
 					answer = f'У вас {count_vk_messages} новых сообщения в Вконтакте'
 				else:
 					answer = f'У вас {count_vk_messages} новых сообщений в Вконтакте'
+
 				synthesis_text(answer)
 
 				for message in vk_messages:
 					result = self.db.delete_vk_message(message[0])
 					if result == 0:
 						logger.error(ERROR_DELETE_NEW_VK_MESSAGE)
+
 		except Exception as e:
 			logger.error(e)
 
@@ -82,6 +87,9 @@ class Monitoring:
 	def start(self):
 		try:
 			while True:
+				if not states.get_assistant_work_state():
+					break
+
 				self.check_telegram_messages()
 				self.check_vk_messages()
 				self.check_overcrowding_old_requests()

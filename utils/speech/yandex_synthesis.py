@@ -1,6 +1,7 @@
 import pyaudio
 from speechkit import SpeechSynthesis
 from utils.speech.config import session
+from common.states import states
 
 
 synthesizeAudio = SpeechSynthesis(session)
@@ -34,6 +35,9 @@ def synthesis_audio_bytes(audio_data):
 
 
 def synthesis_text(text):
+	while states.get_synthesis_work_state(): pass
+	states.change_synthesis_work_state(True)
+
 	audio_data = synthesizeAudio.synthesize_stream(
 		text=text,
 		lang=lang,
@@ -43,4 +47,6 @@ def synthesis_text(text):
 		format=format,
 		sampleRateHertz=sample_rate
 	)
+
 	synthesis_audio_bytes(audio_data=audio_data)
+	states.change_synthesis_work_state(False)

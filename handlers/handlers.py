@@ -29,6 +29,10 @@ class Handlers:
 				answer = 'привет'
 				synthesis_text(answer)
 
+			elif 'скажи' in command:
+				answer = command.replace('скажи', '')
+				synthesis_text(answer)
+
 			else:
 				not_found_command = ('Меня еще этому не научили', 'Я не знаю про что вы', 'У меня нет ответа', 'Я еще этого не умею', 'Беспонятия про что вы')
 				synthesis_text(choice(not_found_command))

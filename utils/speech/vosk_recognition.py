@@ -2,6 +2,7 @@ import os
 import json
 import pyaudio
 from vosk import Model, KaldiRecognizer
+from common.states import states
 
 
 sample_rate = 16000
@@ -29,11 +30,12 @@ stream.start_stream()
 def listen():
 	try:
 		while True:
-			data = stream.read(4000, exception_on_overflow=False)
-			if rec.AcceptWaveform(data) and len(data) > 0:
-				answer = json.loads(rec.Result())
-				if answer['text']:
-					yield answer['text']
+			if not states.get_synthesis_work_state():
+				data = stream.read(4000, exception_on_overflow=False)
+				if rec.AcceptWaveform(data) and len(data) > 0:
+					answer = json.loads(rec.Result())
+					if answer['text']:
+						yield answer['text']
 	finally:
 		stream.stop_stream()
 		stream.close()

@@ -1,4 +1,5 @@
 settings/
 logs/
+monitoring/logs/
 .env
 utils/speech/models/

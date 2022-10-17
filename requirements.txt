@@ -1,12 +1,6 @@
+environs==9.5.0
 PyAudio==0.2.12
-pymongo==3.12.0
-python-dotenv==0.21.0
-requests==2.26.0
-silero==0.4.1
-sounddevice==0.4.5
-SpeechRecognition==3.8.1
+speechkit==2.1.1
 Telethon==1.25.2
-torch==1.12.1
-torchaudio==0.12.1
-torchvision==0.13.1
 vk-api==11.9.4
+vosk==0.3.44

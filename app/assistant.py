@@ -2,6 +2,7 @@ from utils.logging import logger
 from handlers.handlers import Handlers
 from utils.speech.vosk_recognition import listen
 from utils.speech.yandex_synthesis import synthesis_text
+from common.states import states
 
 
 class Assistant:
@@ -20,6 +21,7 @@ class Assistant:
 
 				if 'закончить' in command:
 					synthesis_text('до скорой встречи')
+					states.change_assistant_work_state(False)
 					break
 				else:
 					self.handlers.processing(command)
