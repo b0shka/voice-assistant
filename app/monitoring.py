@@ -1,8 +1,13 @@
-import time
-from utils.logging import logger
+import vk_api
+import asyncio
+import threading
+from telethon.sync import TelegramClient, events
+from vk_api.longpoll import VkLongPoll, VkEventType
+from common.config import *
 from common.errors import *
 from common.states import states
 from database.database_sqlite import DatabaseSQLite
+from utils.logging import logger
 from utils.speech.yandex_synthesis import synthesis_text
 
 
@@ -11,89 +16,91 @@ class Monitoring:
 	def __init__(self):
 		try:
 			self.db = DatabaseSQLite()
-			self.db.create_tables()
 
-			self.contacts = self.db.get_contacts()
-			self.telegram_messages = self.db.get_telegram_messages()
-			self.vk_messages = self.db.get_vk_messages()
+			self.client = TelegramClient(
+				PATH_FILE_SESSION_TELEGRAM, 
+				TELEGRAM_API_ID, 
+				TELEGRAM_API_HASH
+			)
+			logger.info("Success connect telegram api")
+
+			self.session = vk_api.VkApi(token=VK_TOKEN)
+			self.longpoll = VkLongPoll(self.session)
+			logger.info('Success connect vk api')
+
 		except Exception as e:
 			logger.error(e)
 
 
-	def check_telegram_messages(self):
+	async def check_telegram(self):
 		try:
-			telegram_messages = self.db.get_telegram_messages()
-			if telegram_messages == 0:
-				logger.error(ERROR_GET_TELEGRAM_MESSAGES)
+			logger.info('Start check new messages in Telegram')
 
-			count_telegram_messages = str(len(telegram_messages))
-			if int(count_telegram_messages):
-				if count_telegram_messages[-1] == '1':
-					answer = 'У вас одно новое сообщение в Телеграм'
-				elif count_telegram_messages[-1] in ('2', '3', '4'):
-					answer = f'У вас {count_telegram_messages} новых сообщения в Телеграм'
-				else:
-					answer = f'У вас {count_telegram_messages} новых сообщений в Телеграм'
+			@self.client.on(events.NewMessage())
+			async def handler(event):
+				message = event.message.to_dict()
+				from_id = message['from_id']['user_id']
 				
-				synthesis_text(answer)
+				if from_id in [i[3] for i in self.contacts]:
+					if not states.get_mute_state():
+						synthesis_text('У вас новое сообщение в Телеграм')
 
-				for message in telegram_messages:
-					result = self.db.delete_telegram_message(message[0])
+					states.change_notifications(
+						'telegram_messages', 
+						{
+							'message': message['message'],
+							'from_id': int(from_id)
+						}
+					)
+
+					result = self.db.add_telegram_message(message['message'], int(from_id))
 					if result == 0:
-						logger.error(ERROR_DELETE_NEW_TELEGRAM_MESSAGE)
+						logger.error(ERROR_ADD_TELEGRAM_MESSAGE)
+
+			await self.client.start()
+			await self.client.run_until_disconnected()
 
 		except Exception as e:
 			logger.error(e)
 
 
-	def check_vk_messages(self):
+	def check_vk(self):
 		try:
-			vk_messages = self.db.get_vk_messages()
-			if vk_messages == 0:
-				logger.error(ERROR_GET_VK_MESSAGES)
+			logger.info('Start check new messages in VK')
+			
+			for event in self.longpoll.listen():
+				if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
+					if event.from_user and event.user_id in [i[4] for i in self.contacts]:
+						if not states.get_mute_state():
+							synthesis_text('У вас новое сообщение в Вконтакте')
 
-			count_vk_messages = str(len(vk_messages))
-			if int(count_vk_messages):
-				if count_vk_messages[-1] == '1':
-					answer = 'У вас одно новое сообщение в Вконтакте'
-				elif count_vk_messages[-1] in ('2', '3', '4'):
-					answer = f'У вас {count_vk_messages} новых сообщения в Вконтакте'
-				else:
-					answer = f'У вас {count_vk_messages} новых сообщений в Вконтакте'
+						states.change_notifications('vk_messages', {
+							'message': event.text,
+							'from_id': event.user_id
+						})
 
-				synthesis_text(answer)
+						result = self.db.add_vk_message(event.text, event.user_id)
+						if result == 0:
+							logger.error(ERROR_ADD_VK_MESSAGE)
 
-				for message in vk_messages:
-					result = self.db.delete_vk_message(message[0])
-					if result == 0:
-						logger.error(ERROR_DELETE_NEW_VK_MESSAGE)
-
-		except Exception as e:
-			logger.error(e)
-
-
-	def check_overcrowding_old_requests(self):
-		try:
-			self.last_requests_answers = self.db.get_requests_answers()
-			if len(self.last_requests_answers) > 10:
-				requests_answer = self.last_requests_answers[::-1]
-				result = self.db.delete_old_requests_answer(requests_answer[10:])
-				if result == 0:
-					logger.error(ERROR_CLEAN_OLD_REQUESTS_ANSWERS)
 		except Exception as e:
 			logger.error(e)
 
 
 	def start(self):
 		try:
-			while True:
-				if not states.get_assistant_work_state():
-					break
+			self.contacts = self.db.get_contacts()
+			if self.contacts == 0:
+				logger.error(ERROR_GET_CONTACTS)
 
-				self.check_telegram_messages()
-				self.check_vk_messages()
-				self.check_overcrowding_old_requests()
+			check_vk = threading.Thread(target=self.check_vk)
+			check_vk.start()
 
-				time.sleep(5)
+			loop = asyncio.new_event_loop()
+			asyncio.set_event_loop(loop)
+			loop.run_until_complete(self.check_telegram())
+			#loop.run_until_complete(self.check_vk())
+			#asyncio.create_task(self.check_vk())
+
 		except Exception as e:
 			logger.error(e)
