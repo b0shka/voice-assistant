@@ -1,12 +1,8 @@
-from random import choice
 from database.database_sqlite import DatabaseSQLite
-#from services.telegram.telegram import Telegram
-#from services.vk.vk import VK
-#from services.yandex.yandex import Yandex
 from utils.logging import logger
-from utils.speech.yandex_synthesis import synthesis_text
 from common.errors import *
 from handlers.list_requests import *
+from app.functions import notifications, communication
 
 
 class Handlers:
@@ -14,37 +10,30 @@ class Handlers:
 	def __init__(self):
 		try:
 			self.db = DatabaseSQLite()
-			#self.telegram = Telegram()
-			#self.vk = VK()
-			#self.yandex = Yandex()
 		except Exception as e:
 			logger.error(e)
 
 
 	def processing(self, command):
 		try:
-			answer = None
+			if 'уведомления' in command:
+				if 'мои' in command or 'посмотреть' in command or 'просмотреть' in command:
+					notifications.viewing_notifications()
 
-			if 'привет' in command:
-				answer = 'привет'
-				synthesis_text(answer)
-
-			elif 'скажи' in command:
-				answer = command.replace('скажи', '')
-				synthesis_text(answer)
+				elif 'удалить' in command or 'очистить' in command:
+					notifications.clean_notifications()
 
 			else:
-				not_found_command = ('Меня еще этому не научили', 'Я не знаю про что вы', 'У меня нет ответа', 'Я еще этого не умею', 'Беспонятия про что вы')
-				synthesis_text(choice(not_found_command))
+				communication.nothing_found()
 
 			result = self.db.add_request_answer_assistant(command, 'request')
 			if result == 0:
 				logger.error(ERROR_ADD_REQUEST_ANSWER)
 
-			if answer:
-				result = self.db.add_request_answer_assistant(answer, 'answer')
-				if result == 0:
-					logger.error(ERROR_ADD_REQUEST_ANSWER)
+			#if answer:
+			#	result = self.db.add_request_answer_assistant(answer, 'answer')
+			#	if result == 0:
+			#		logger.error(ERROR_ADD_REQUEST_ANSWER)
 		except Exception as e:
 			logger.error(e)
 

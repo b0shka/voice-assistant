@@ -7,7 +7,10 @@ class States:
 	def __init__(self):
 		self.SYNTHESIS_WORK = False
 		self.ASSISTANT_WORK = True
-		self.WAITING_RESPONSE = False
+		self.WAITING_RESPONSE = {
+			'status': False,
+			'topic': None
+		}
 		self.MUTE = False
 		self.NOTIFICATIONS = {
 			'telegram_messages': [],
@@ -35,8 +38,9 @@ class States:
 		return self.WAITING_RESPONSE
 
 
-	def change_waiting_response_state(self, state):
-		self.WAITING_RESPONSE = state
+	def change_waiting_response_state(self, state, topic):
+		self.WAITING_RESPONSE['status'] = state
+		self.WAITING_RESPONSE['topic'] = topic
 
 
 	def get_mute_state(self):
@@ -53,6 +57,10 @@ class States:
 
 	def change_notifications(self, type, data):
 		self.NOTIFICATIONS[type].append(data)
+
+	
+	def clean_notifications(self, type):
+		self.NOTIFICATIONS[type] = []
 
 
 states = States()
