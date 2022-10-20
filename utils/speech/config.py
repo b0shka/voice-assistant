@@ -7,7 +7,5 @@ from common.config import YANDEX_CLOUD_OAUTH_TOKEN, YANDEX_CLOUD_CATALOG_ID, YAN
 #	YANDEX_CLOUD_CATALOG_ID
 #)
 session = Session.from_api_key(
-	YANDEX_CLOUD_API_KEY, 
-	x_client_request_id_header=True, 
-	x_data_logging_enabled=True
+	YANDEX_CLOUD_API_KEY
 )
