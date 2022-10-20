@@ -27,19 +27,19 @@ class Assistant:
 			intermediate_result = None
 
 			for command in listen():
-				if command['mode'] == 'intermediate' and command['text'] != intermediate_result:
-					intermediate_result = command['text']
+				if command['mode'] == 'intermediate' and command['text'][0] != intermediate_result:
+					intermediate_result = command['text'][0]
 					print('[INTERMEDIATE]', intermediate_result)
 
 				elif command['mode'] == 'finite':
-					print('[RESULT]', command['text'])
+					print('[RESULT]', command['text'][0])
 
-					if 'закончить' in command['text']:
+					if 'закончить' in command['text'][0]:
 						synthesis_text('до скорой встречи')
 						states.change_assistant_work_state(False)
 						break
 					else:
-						self.handlers.processing(command['text'])
+						self.handlers.processing(command['text'][0])
 
 		except Exception as e:
 			logger.error(e)

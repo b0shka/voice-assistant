@@ -1,0 +1,1 @@
+NOTIFICATIONS_NAME = 'notifications'

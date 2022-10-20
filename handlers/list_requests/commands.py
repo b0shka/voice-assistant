@@ -1,8 +1,13 @@
-from actions import *
-from functions import *
-from pronouns import *
+from list_requests.actions import *
+from list_requests.functions import *
+from list_requests.pronouns import *
+from list_requests.functions_name import *
 
 
 COMMANDS = {
-	'notifications': [NOTIFICATIONS, WATCH, SHOW, MY]
+	NOTIFICATIONS_NAME: {
+		'function': NOTIFICATIONS,
+		'actions': SHOW + WATCH,
+		'pronouns': MY
+	}
 }
