@@ -1,8 +1,9 @@
-import pymorphy2
+#import pymorphy2
 from database.database_sqlite import DatabaseSQLite
 from utils.logging import logger
 from common.errors import *
 from handlers.list_requests.commands import COMMANDS
+from handlers.list_requests.config import *
 from app.functions import notifications, communication
 
 
@@ -11,17 +12,15 @@ class Handlers:
 	def __init__(self):
 		try:
 			self.db = DatabaseSQLite()
-			self.morph = pymorphy2.MorphAnalyzer()
+			#self.morph = pymorphy2.MorphAnalyzer()
 		except Exception as e:
 			logger.error(e)
 
 
 	def processing(self, command):
 		try:
-			topics = self.determinate_topic(command)
-
-			if topics == []:
-				communication.nothing_found()
+			topics = self.determinate_topics(command)
+			print(topics)
 
 			#if 'уведомления' in command:
 			#	if 'мои' in command or 'посмотреть' in command or 'просмотреть' in command:
@@ -42,16 +41,58 @@ class Handlers:
 			logger.error(e)
 
 
-	def determinate_topic(self, command):
+	def determinate_topics(self, text_command):
 		try:
-			print(command)
-			list_command = command.split()
-			topics = []
+			topics = {}
 
-			for i in list_command:
-				p = self.morph.parse(i.replace("\u200b", ""))[0]
-				normal_form = p.normal_form
-				print(normal_form)
+			for command in COMMANDS.keys():
+				for word in text_command.split():
+					if type(COMMANDS[command][FUNCTION][0]) == tuple:
+						pass
+
+					if word in COMMANDS[command][FUNCTION]:
+						topics[command][FUNCTION] += 1
+					
+					if word in COMMANDS[command][ACTIONS]:
+						topics[command][ACTIONS] += 1
+
+					if word in COMMANDS[command][PRONOUNS]:
+						topics[command][PRONOUNS] += 1
+
+			#for word in text_command.split():
+			#	#p = self.morph.parse(word.replace("\u200b", ""))[0]
+			#	#normal_form = p.normal_form
+			#	normal_form = word
+				
+			#	for i in COMMANDS.keys():
+			#		if i not in topics.keys():
+			#			topics[i] = {
+			#				FUNCTION: 0,
+			#				ACTIONS: 0,
+			#				PRONOUNS: 0
+			#			}
+
+			#		if type(COMMANDS[i][FUNCTION][0]) == tuple:
+			#			count_ = 0
+						
+			#			for func in COMMANDS[i][FUNCTION]:
+			#				if normal_form in func:
+			#					count_ += 1
+
+			#			if count_ == len(COMMANDS[i][FUNCTION]):
+			#				topics[i][FUNCTION] += 1
+			#		else:
+			#			if normal_form in COMMANDS[i][FUNCTION]:
+			#				topics[i][FUNCTION] += 1
+
+			#		if normal_form in COMMANDS[i][ACTIONS]:
+			#			topics[i][ACTIONS] += 1
+
+			#		if normal_form in COMMANDS[i][PRONOUNS]:
+			#			topics[i][PRONOUNS] += 1
+
+			#		if topics[i][FUNCTION] == 0:
+			#			del topics[i]
 
 			return topics
 
