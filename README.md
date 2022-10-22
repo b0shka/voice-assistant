@@ -4,6 +4,13 @@ Voice assistant, for automating the processes of everyday life
 
 ![Python][python-version]
 
+---
+## Opportunities
+* Monitoring of new messages in:
+	- Telegram
+	- VK
+* Notification of new messages received in the previous paragraph
+
 
 ---
 ## Requirements

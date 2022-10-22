@@ -1,5 +1,5 @@
 from speechkit import Session
-from common.config import YANDEX_CLOUD_OAUTH_TOKEN, YANDEX_CLOUD_CATALOG_ID, YANDEX_CLOUD_API_KEY
+from common.config import YANDEX_CLOUD_API_KEY
 
 
 #session = Session.from_yandex_passport_oauth_token(

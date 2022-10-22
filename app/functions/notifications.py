@@ -51,6 +51,24 @@ def viewing_notifications():
 				answer = f'У вас {count_vk_messages} новых сообщений в Вконтакте'
 
 			synthesis_text(answer)
+
+		if not int(count_telegram_messages) and not int(count_vk_messages):
+			answer = 'У вас пока нет уведомлений'
+			synthesis_text(answer)
+	except Exception as e:
+		logger.error(e)
+
+
+def viewing_telegram_messages():
+	try:
+		pass
+	except Exception as e:
+		logger.error(e)
+
+
+def viewing_vk_messages():
+	try:
+		pass
 	except Exception as e:
 		logger.error(e)
 
