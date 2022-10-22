@@ -1,7 +1,6 @@
 import time
 from utils.logging import logger
 from common.errors import *
-from common.states import states
 from database.database_sqlite import DatabaseSQLite
 from utils.speech.yandex_synthesis import synthesis_text
 
@@ -87,9 +86,6 @@ class Monitoring:
 	def start(self):
 		try:
 			while True:
-				if not states.get_assistant_work_state():
-					break
-
 				self.check_telegram_messages()
 				self.check_vk_messages()
 				self.check_overcrowding_old_requests()

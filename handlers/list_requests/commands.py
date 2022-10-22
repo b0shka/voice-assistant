@@ -1,61 +1,61 @@
 from handlers.list_requests.actions import *
 from handlers.list_requests.functions import *
 from handlers.list_requests.pronouns import *
-from handlers.list_requests.functions_name import *
+from handlers.list_requests.functions_name import FunctionsName
 from handlers.list_requests.config import *
 from handlers.list_requests.descriptions import *
 
 
 ALL_FUNCTIONS = {
-	NOTIFICATIONS_TOPIC: NOTIFICATIONS_FUNCTIONS,
-	TELEGRAM_MESSAGES_TOPIC: TELEGRAM_MESSAGES_FUNCTIONS,
-	VK_MESSAGES_TOPIC: VK_MESSAGES_FUNCTIONS
+	FunctionsName.NOTIFICATIONS_TOPIC: FunctionsName.NOTIFICATIONS_FUNCTIONS,
+	FunctionsName.TELEGRAM_MESSAGES_TOPIC: FunctionsName.TELEGRAM_MESSAGES_FUNCTIONS,
+	FunctionsName.VK_MESSAGES_TOPIC: FunctionsName.VK_MESSAGES_FUNCTIONS
 }
 
 COMMANDS = {
-	EXIT_TOPIC: {
+	FunctionsName.EXIT_TOPIC: {
 		FUNCTIONS: EXIT,
 		ACTIONS: (),
 		PRONOUNS: ()
 	},
-	SHOW_NOTIFICATIONS: {
+	FunctionsName.SHOW_NOTIFICATIONS: {
 		FUNCTIONS: NOTIFICATIONS,
 		ACTIONS: SHOW + WATCH,
 		PRONOUNS: MY
 	},
-	CLEAN_NOTIFICATIONS: {
+	FunctionsName.CLEAN_NOTIFICATIONS: {
 		FUNCTIONS: NOTIFICATIONS,
 		ACTIONS: REMOVE,
 		PRONOUNS: ()
 	},
 
-	SHOW_TELEGRAM_MESSAGES: {
+	FunctionsName.SHOW_TELEGRAM_MESSAGES: {
 		FUNCTIONS: (MESSAGES, TELEGRAM),
 		ACTIONS: SHOW + WATCH,
 		PRONOUNS: MY
 	},
-	CLEAN_TELEGRAM_MESSAGES: {
+	FunctionsName.CLEAN_TELEGRAM_MESSAGES: {
 		FUNCTIONS: (MESSAGES, TELEGRAM),
 		ACTIONS: REMOVE,
 		PRONOUNS: ()
 	},
-	SEND_TELEGRAM_MESSAGES: {
+	FunctionsName.SEND_TELEGRAM_MESSAGES: {
 		FUNCTIONS: (MESSAGES, TELEGRAM),
 		ACTIONS: SEND + WRITE + CREATE,
 		PRONOUNS: ()
 	},
 
-	SHOW_VK_MESSAGES: {
+	FunctionsName.SHOW_VK_MESSAGES: {
 		FUNCTIONS: (MESSAGES, VK),
 		ACTIONS: SHOW + WATCH,
 		PRONOUNS: MY
 	},
-	CLEAN_VK_MESSAGES: {
+	FunctionsName.CLEAN_VK_MESSAGES: {
 		FUNCTIONS: (MESSAGES, VK),
 		ACTIONS: REMOVE,
 		PRONOUNS: ()
 	},
-	SEND_VK_MESSAGES: {
+	FunctionsName.SEND_VK_MESSAGES: {
 		FUNCTIONS: (MESSAGES, VK),
 		ACTIONS: SEND + WRITE + CREATE,
 		PRONOUNS: ()

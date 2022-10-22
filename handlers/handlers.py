@@ -1,17 +1,19 @@
-from database.database_sqlite import DatabaseSQLite
+from re import L
 from utils.logging import logger
-from common.errors import *
+from common.states import states
 from handlers.list_requests.commands import COMMANDS, ALL_FUNCTIONS
 from handlers.list_requests.config import *
-from handlers.list_requests.functions_name import *
-from app.functions import notifications, communication
+from handlers.list_requests.functions_name import FunctionsName
+from app.functions.notifications import Notifications
+from app.functions.communication import Communication
 
 
 class Handlers:
 
 	def __init__(self):
 		try:
-			self.db = DatabaseSQLite()
+			self.notifications = Notifications()
+			self.communication = Communication()
 		except Exception as e:
 			logger.error(e)
 
@@ -23,55 +25,57 @@ class Handlers:
 
 			match topic:
 				case None:
-					communication.nothing_found()
+					self.communication.nothing_found()
 
-				case topic if topic == EXIT_TOPIC:
-					return communication.exit()
+				case FunctionsName.EXIT_TOPIC:
+					return self.communication.exit()
 
-				case topic if topic == NOTIFICATIONS_TOPIC:
-					pass
+				# Notifications
+				case FunctionsName.NOTIFICATIONS_TOPIC:
+					states.change_waiting_response_state(True, FunctionsName.NOTIFICATIONS_TOPIC)
+					self.notifications.waiting_select_action()
 
-				case topic if topic == SHOW_NOTIFICATIONS:
-					notifications.viewing_notifications()
+				case FunctionsName.SHOW_NOTIFICATIONS:
+					states.change_waiting_response_state(False, FunctionsName.NOTIFICATIONS_TOPIC)
+					self.notifications.viewing_notifications()
 				
-				case topic if topic == CLEAN_NOTIFICATIONS:
-					notifications.clean_all_notifications()
+				case FunctionsName.CLEAN_NOTIFICATIONS:
+					states.change_waiting_response_state(False, FunctionsName.NOTIFICATIONS_TOPIC)
+					self.notifications.clean_all_notifications()
 
-				case topic if topic == TELEGRAM_MESSAGES_TOPIC:
+
+				# Telegram
+				case FunctionsName.TELEGRAM_MESSAGES_TOPIC:
+					states.change_waiting_response_state(True, FunctionsName.TELEGRAM_MESSAGES_TOPIC)
+					self.notifications.waiting_select_action()
+
+				case FunctionsName.SHOW_TELEGRAM_MESSAGES:
+					self.notifications.viewing_telegram_messages()
+
+				case FunctionsName.CLEAN_TELEGRAM_MESSAGES:
+					self.notifications.clean_telegram_messages()
+
+				case FunctionsName.SEND_TELEGRAM_MESSAGES:
 					pass
 
-				case topic if topic == SHOW_TELEGRAM_MESSAGES:
-					notifications.viewing_telegram_messages()
 
-				case topic if topic == CLEAN_TELEGRAM_MESSAGES:
-					notifications.clean_telegram_messages()
+				# VK
+				case FunctionsName.VK_MESSAGES_TOPIC:
+					states.change_waiting_response_state(True, FunctionsName.VK_MESSAGES_TOPIC)
+					self.notifications.waiting_select_action()
 
-				case topic if topic == SEND_TELEGRAM_MESSAGES:
-					pass
+				case FunctionsName.SHOW_VK_MESSAGES:
+					self.notifications.viewing_vk_messages()
 
-				case topic if topic == VK_MESSAGES_TOPIC:
-					pass
+				case FunctionsName.CLEAN_VK_MESSAGES:
+					self.notifications.clean_vk_messages()
 
-				case topic if topic == SHOW_VK_MESSAGES:
-					notifications.viewing_vk_messages()
-
-				case topic if topic == CLEAN_VK_MESSAGES:
-					notifications.clean_vk_messages()
-
-				case topic if topic == SEND_VK_MESSAGES:
+				case FunctionsName.SEND_VK_MESSAGES:
 					pass
 
 				case _:
-					communication.nothing_found()
+					self.communication.nothing_found()
 
-			result = self.db.add_request_answer_assistant(command, 'request')
-			if result == 0:
-				logger.error(ERROR_ADD_REQUEST_ANSWER)
-
-			#if answer:
-			#	result = self.db.add_request_answer_assistant(answer, 'answer')
-			#	if result == 0:
-			#		logger.error(ERROR_ADD_REQUEST_ANSWER)
 		except Exception as e:
 			logger.error(e)
 
@@ -105,8 +109,8 @@ class Handlers:
 						if word in COMMANDS[command][PRONOUNS]:
 							topics[command][PRONOUNS] += 1
 
-				if len(number_occurrences) == len(COMMANDS[command][FUNCTIONS]):
-					topics[command][FUNCTIONS] = len(number_occurrences)
+				if type(COMMANDS[command][FUNCTIONS][0]) == tuple and len(number_occurrences) == len(COMMANDS[command][FUNCTIONS]):
+					topics[command][FUNCTIONS] += len(number_occurrences)
 
 				if topics[command][FUNCTIONS] == 0:
 					del topics[command]

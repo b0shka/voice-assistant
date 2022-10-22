@@ -58,8 +58,16 @@ class DatabaseSQLite:
 	def get_contacts(self):
 		try:
 			self.sql.execute(f"SELECT * FROM {TABLE_CONTACTS};")
-			contacts = self.sql.fetchall()
-			return contacts
+			return self.sql.fetchall()
+		except Exception as e:
+			logger.error(e)
+			return 0
+
+
+	def get_contact_by_id(self, id):
+		try:
+			self.sql.execute(f"SELECT * FROM {TABLE_CONTACTS} WHERE id = {id};")
+			return self.sql.fetchone()
 		except Exception as e:
 			logger.error(e)
 			return 0
@@ -92,8 +100,7 @@ class DatabaseSQLite:
 	def get_telegram_messages(self):
 		try:
 			self.sql.execute(f"SELECT * FROM {TABLE_TELEGRAM_MESSAGES};")
-			messages = self.sql.fetchall()
-			return messages
+			return self.sql.fetchall()
 		except Exception as e:
 			logger.error(e)
 			return 0
@@ -102,14 +109,25 @@ class DatabaseSQLite:
 	def get_vk_messages(self):
 		try:
 			self.sql.execute(f"SELECT * FROM {TABLE_VK_MESSAGES};")
-			messages = self.sql.fetchall()
-			return messages
+			return self.sql.fetchall()
 		except Exception as e:
 			logger.error(e)
 			return 0
 
 
-	def delete_telegram_message(self, id):
+	def delete_telegram_messages(self):
+		try:
+			self.sql.execute(f"DELETE FROM {TABLE_TELEGRAM_MESSAGES};")
+
+			self.db.commit()
+			logger.info("Удалены все сообщения из Telegram")
+			return 1
+		except Exception as e:
+			logger.error(e)
+			return 0
+
+
+	def delete_telegram_message_by_id(self, id):
 		try:
 			self.sql.execute(f"DELETE FROM {TABLE_TELEGRAM_MESSAGES} WHERE id = {id};")
 
@@ -121,7 +139,19 @@ class DatabaseSQLite:
 			return 0
 
 
-	def delete_vk_message(self, id):
+	def delete_vk_messages(self):
+		try:
+			self.sql.execute(f"DELETE FROM {TABLE_VK_MESSAGES};")
+
+			self.db.commit()
+			logger.info("Удалены все сообщения из ВКонтакте")
+			return 1
+		except Exception as e:
+			logger.error(e)
+			return 0
+
+
+	def delete_vk_message_by_id(self, id):
 		try:
 			self.sql.execute(f"DELETE FROM {TABLE_VK_MESSAGES} WHERE id = {id};")
 
@@ -133,7 +163,7 @@ class DatabaseSQLite:
 			return 0
 
 
-	def add_request_answer_assistant(self, text, type):
+	def add_request_answer(self, text, type):
 		try:
 			self.sql.execute(f"INSERT INTO {TABLE_REQUESTS_ANSWERS} (text, type) VALUES (?, ?);", (text, type))
 			self.db.commit()
@@ -148,8 +178,7 @@ class DatabaseSQLite:
 	def get_requests_answers(self):
 		try:
 			self.sql.execute(f"SELECT * FROM {TABLE_REQUESTS_ANSWERS};")
-			requests_answers = self.sql.fetchall()
-			return requests_answers
+			return self.sql.fetchall()
 		except Exception as e:
 			logger.error(e)
 			return 0

@@ -6,7 +6,6 @@ class States:
 
 	def __init__(self):
 		self.SYNTHESIS_WORK = False
-		self.ASSISTANT_WORK = True
 		self.WAITING_RESPONSE = {
 			'status': False,
 			'topic': None
@@ -24,14 +23,6 @@ class States:
 
 	def change_synthesis_work_state(self, state):
 		self.SYNTHESIS_WORK = state
-		
-
-	def get_assistant_work_state(self):
-		return self.ASSISTANT_WORK
-
-
-	def change_assistant_work_state(self, state):
-		self.ASSISTANT_WORK = state
 
 
 	def get_waiting_response_state(self):
@@ -53,6 +44,10 @@ class States:
 
 	def get_notifications(self):
 		return self.NOTIFICATIONS
+
+
+	def get_notifications_type(self, type):
+		return self.NOTIFICATIONS[type]
 
 
 	def change_notifications(self, type, data):
