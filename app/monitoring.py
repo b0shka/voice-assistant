@@ -106,35 +106,41 @@ class Monitoring:
 			
 			for event in self.longpoll.listen():
 				if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
-					match self.get_contact_by_from_id(event.user_id, VK_MESSAGES_NOTIFICATION):
-						case 0:
-							pass
-							# сообщение не от контакта
-						case -1:
-							logger.error(ERROR_GET_CONTACT_BY_VK_ID)
-						case contact if type(contact) == tuple:
-							if not states.get_mute_state():
-								answer = f'У вас новое сообщение в Вконтакте от контакта {contact[1]}'
-								if contact[2]:
-									answer += f' {contact[2]}'
-								synthesis_text(answer)
 
-							states.change_notifications(
-								VK_MESSAGES_NOTIFICATION, 
-								Message(
-									message = event.text,
-									contact_id = contact[0],
-									first_name = contact[1],
-									last_name = contact[2]
+					if event.from_user:
+						match self.get_contact_by_from_id(event.user_id, VK_MESSAGES_NOTIFICATION):
+							case 0:
+								pass
+								# сообщение не от контакта
+							case -1:
+								logger.error(ERROR_GET_CONTACT_BY_VK_ID)
+
+							case contact if type(contact) == tuple:
+								if not states.get_mute_state():
+									answer = f'У вас новое сообщение в Вконтакте от контакта {contact[1]}'
+									if contact[2]:
+										answer += f' {contact[2]}'
+									synthesis_text(answer)
+
+								states.change_notifications(
+									VK_MESSAGES_NOTIFICATION, 
+									Message(
+										message = event.text,
+										contact_id = contact[0],
+										first_name = contact[1],
+										last_name = contact[2]
+									)
 								)
-							)
 
-							result = self.db.add_vk_message(
-								message = event.text, 
-								contact_id = contact[0]
-							)
-							if result == 0:
-								logger.error(ERROR_ADD_VK_MESSAGE)
+								result = self.db.add_vk_message(
+									message = event.text, 
+									contact_id = contact[0]
+								)
+								if result == 0:
+									logger.error(ERROR_ADD_VK_MESSAGE)
+
+					elif event.from_chat:
+						pass
 
 		except Exception as e:
 			logger.error(e)

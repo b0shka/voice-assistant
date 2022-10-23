@@ -30,6 +30,7 @@ class Handlers:
 				case FunctionsName.EXIT_TOPIC:
 					return self.communication.exit()
 
+
 				# Notifications
 				case FunctionsName.NOTIFICATIONS_TOPIC:
 					states.change_waiting_response_state(True, FunctionsName.NOTIFICATIONS_TOPIC)
@@ -80,6 +81,7 @@ class Handlers:
 
 				case FunctionsName.UPDATE_CONTACTS:
 					pass
+
 
 				case _:
 					self.communication.nothing_found()

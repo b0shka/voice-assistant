@@ -15,3 +15,10 @@ class Telegram:
 			logger.info("Success connect telegram api")
 		except Exception as e:
 			logger.error(e)
+
+
+	async def check_new_messages(self):
+		try:
+			pass
+		except Exception as e:
+			logger.error(e)
