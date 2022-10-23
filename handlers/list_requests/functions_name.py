@@ -2,9 +2,6 @@
 
 class FunctionsName:
 
-	def __init__(self):
-		print("################# HELLO #######################")
-
 	EXIT_TOPIC = 'exit'
 
 	NOTIFICATIONS_TOPIC = 'notifications'
@@ -23,3 +20,5 @@ class FunctionsName:
 	CLEAN_VK_MESSAGES = 'clean_vk_messages'
 	SEND_VK_MESSAGES = 'send_vk_messages'
 	VK_MESSAGES_FUNCTIONS = (SHOW_VK_MESSAGES, CLEAN_VK_MESSAGES, SEND_VK_MESSAGES)
+
+	UPDATE_CONTACTS = 'update_contacts'

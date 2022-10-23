@@ -1,6 +1,7 @@
 import sqlite3
 from common.config import *
-from common.tables import *
+from common.errors import *
+from database.tables import *
 from utils.logging import logger
 
 
@@ -20,26 +21,31 @@ class DatabaseSQLite:
 			self.sql.execute(f"""CREATE TABLE IF NOT EXISTS `{TABLE_TELEGRAM_MESSAGES}` (
 							id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 							text TEXT NOT NULL,
-							from_id INTEGER NOT NULL,
+							contact_id INTEGER NOT NULL,
 							time DATETIME DEFAULT CURRENT_TIMESTAMP);""")
 
 			self.sql.execute(f"""CREATE TABLE IF NOT EXISTS `{TABLE_VK_MESSAGES}` (
 							id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 							text TEXT NOT NULL,
-							from_id INTEGER NOT NULL,
+							contact_id INTEGER,
+							from_id INTEGER,
+							from_name VARCHAR(255),
 							time DATETIME DEFAULT CURRENT_TIMESTAMP);""")
 
 			self.sql.execute(f"""CREATE TABLE IF NOT EXISTS `{TABLE_YANDEX_MESSAGES}` (
 							id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 							text TEXT NOT NULL,
-							from_user VARCHAR(255) NOT NULL,
+							contact_id INTEGER,
+							from_email VARCHAR(255),
+							from_name VARCHAR(255),
 							time DATETIME DEFAULT CURRENT_TIMESTAMP);""")
 
 			self.sql.execute(f"""CREATE TABLE IF NOT EXISTS `{TABLE_CONTACTS}` (
 							id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-							name VARCHAR(255) NOT NULL,
+							first_name VARCHAR(255) NOT NULL,
+							last_name VARCHAR(255) NOT NULL,
 							phone INTEGER NOT NULL,
-							telegram_id INTEGER,
+							telegram_id INTEGER NOT NULL,
 							vk_id INTEGER NOT NULL,
 							email VARCHAR(255));""")
 
@@ -51,6 +57,7 @@ class DatabaseSQLite:
 
 			self.db.commit()
 			logger.info(f'Create table if not exists {TABLE_TELEGRAM_MESSAGES}, {TABLE_VK_MESSAGES}, {TABLE_YANDEX_MESSAGES} in database')
+
 		except Exception as e:
 			logger.error(e)
 
@@ -64,33 +71,31 @@ class DatabaseSQLite:
 			return 0
 
 
-	def get_contact_by_id(self, id):
+	def add_telegram_message(self, message, contact_id):
 		try:
-			self.sql.execute(f"SELECT * FROM {TABLE_CONTACTS} WHERE id = {id};")
-			return self.sql.fetchone()
-		except Exception as e:
-			logger.error(e)
-			return 0
-
-
-	def add_telegram_message(self, message, from_id):
-		try:
-			self.sql.execute(f"INSERT INTO {TABLE_TELEGRAM_MESSAGES} (text, from_id) VALUES (?, ?);", (message, from_id))
+			self.sql.execute(f"INSERT INTO {TABLE_TELEGRAM_MESSAGES} (text, contact_id) VALUES (?, ?);", (message, contact_id))
 			self.db.commit()
 
-			logger.info(f"Добавлено новое сообщение из Telegram от пользователя {from_id}")
+			logger.info(f"Добавлено новое сообщение из Telegram от контакта {contact_id}")
 			return 1
 		except Exception as e:
 			logger.error(e)
 			return 0
 
 
-	def add_vk_message(self, message, from_id):
+	def add_vk_message(self, message, contact_id=None, from_id=None, from_name=None):
 		try:
-			self.sql.execute(f"INSERT INTO {TABLE_VK_MESSAGES} (text, from_id) VALUES (?, ?);", (message, from_id))
+			if contact_id:
+				self.sql.execute(f"INSERT INTO {TABLE_VK_MESSAGES} (text, contact_id) VALUES (?, ?);", (message, contact_id))
+			else:
+				self.sql.execute(f"INSERT INTO {TABLE_VK_MESSAGES} (text, from_id, from_name) VALUES (?, ?);", (message, from_id, from_name))
+
 			self.db.commit()
 
-			logger.info(f"Добавлено новое сообщение из VK от пользователя {from_id}")
+			if contact_id:
+				logger.info(f"Добавлено новое сообщение из VK от контакта {contact_id}")
+			else:
+				logger.info(f"Добавлено новое сообщение из VK от пользователя {from_name}")
 			return 1
 		except Exception as e:
 			logger.error(e)
@@ -167,8 +172,16 @@ class DatabaseSQLite:
 		try:
 			self.sql.execute(f"INSERT INTO {TABLE_REQUESTS_ANSWERS} (text, type) VALUES (?, ?);", (text, type))
 			self.db.commit()
-
 			logger.info(f"Добавлена новая запись типа {type}")
+
+			last_requests_answers = self.get_requests_answers()
+			if len(last_requests_answers) > 10:
+				requests_answer = last_requests_answers[::-1]
+				result = self.delete_old_requests_answer(requests_answer[10:])
+				if result == 0:
+					logger.error(ERROR_CLEAN_OLD_REQUESTS_ANSWERS)
+
+			logger.info("Очищены стратые запросы/ответы ассистента")
 			return 1
 		except Exception as e:
 			logger.error(e)

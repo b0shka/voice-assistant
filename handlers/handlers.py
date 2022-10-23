@@ -1,4 +1,3 @@
-from re import L
 from utils.logging import logger
 from common.states import states
 from handlers.list_requests.commands import COMMANDS, ALL_FUNCTIONS
@@ -71,6 +70,14 @@ class Handlers:
 					self.notifications.clean_vk_messages()
 
 				case FunctionsName.SEND_VK_MESSAGES:
+					pass
+
+
+				# Contacts
+				case FunctionsName.CONTACTS_TOPIC:
+					pass
+
+				case FunctionsName.UPDATE_CONTACTS:
 					pass
 
 				case _:

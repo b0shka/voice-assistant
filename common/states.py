@@ -1,5 +1,4 @@
-from xmlrpc.client import Boolean
-
+from common.notifications import *
 
 
 class States:
@@ -12,8 +11,8 @@ class States:
 		}
 		self.MUTE = False
 		self.NOTIFICATIONS = {
-			'telegram_messages': [],
-			'vk_messages': []
+			TELEGRAM_MESSAGES_NOTIFICATION: [],
+			VK_MESSAGES_NOTIFICATION: []
 		}
 
 

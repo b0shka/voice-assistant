@@ -39,7 +39,7 @@ class Monitoring:
 				for message in telegram_messages:
 					result = self.db.delete_telegram_message(message[0])
 					if result == 0:
-						logger.error(ERROR_DELETE_NEW_TELEGRAM_MESSAGE)
+						logger.error(ERROR_DELETE_TELEGRAM_MESSAGE)
 
 		except Exception as e:
 			logger.error(e)
@@ -65,7 +65,7 @@ class Monitoring:
 				for message in vk_messages:
 					result = self.db.delete_vk_message(message[0])
 					if result == 0:
-						logger.error(ERROR_DELETE_NEW_VK_MESSAGE)
+						logger.error(ERROR_DELETE_VK_MESSAGE)
 
 		except Exception as e:
 			logger.error(e)
