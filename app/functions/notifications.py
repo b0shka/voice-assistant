@@ -1,6 +1,7 @@
 from utils.logging import logger
 from common.states import states
 from common.errors import *
+from common.notifications import *
 from utils.speech.yandex_synthesis import synthesis_text
 from database.database_sqlite import DatabaseSQLite
 
@@ -10,8 +11,21 @@ class Notifications:
 	def __init__(self):
 		try:
 			self.db = DatabaseSQLite()
+			self.contacts = self.db.get_contacts()
 		except Exception as e:
 			logger.error(e)
+
+
+	def get_contact_by_id(self, id):
+		try:
+			for contact in self.contacts:
+				if contact[0] == id:
+					return contact
+
+			return 0
+		except Exception as e:
+			logger.error(e)
+			return -1
 
 
 	def waiting_select_action(self):
@@ -22,7 +36,7 @@ class Notifications:
 		try:
 			notifications = states.get_notifications()
 
-			count_telegram_messages = str(len(notifications['telegram_messages']))
+			count_telegram_messages = str(len(notifications[TELEGRAM_MESSAGES_NOTIFICATION]))
 			if int(count_telegram_messages):
 				if count_telegram_messages[-1] == '1':
 					answer = 'У вас одно новое сообщение в Телеграм'
@@ -33,7 +47,7 @@ class Notifications:
 
 				synthesis_text(answer)
 
-			count_vk_messages = str(len(notifications['vk_messages']))
+			count_vk_messages = str(len(notifications[VK_MESSAGES_NOTIFICATION]))
 			if int(count_vk_messages):
 				if count_vk_messages[-1] == '1':
 					answer = 'У вас одно новое сообщение в Вконтакте'
@@ -52,36 +66,10 @@ class Notifications:
 			logger.error(e)
 
 
-	def viewing_telegram_messages(self):
+	def clean_notifications(self):
 		try:
-			telegram_messages = states.get_notifications_type('telegram_messages')
-
-			if len(telegram_messages):
-				for message in telegram_messages:
-					print(message)
-			else:
-				synthesis_text('У вас нет новых сообщений в Телеграм')
-		except Exception as e:
-			logger.error(e)
-
-
-	def viewing_vk_messages(self):
-		try:
-			vk_messages = states.get_notifications_type('vk_messages')
-
-			if len(vk_messages):
-				for message in vk_messages:
-					print(message)
-			else:
-				synthesis_text('У вас нет новых сообщений в Вконтакте')
-		except Exception as e:
-			logger.error(e)
-
-
-	def clean_all_notifications(self):
-		try:
-			states.clean_notifications('telegram_messages')
-			states.clean_notifications('vk_messages')
+			states.clean_notifications(TELEGRAM_MESSAGES_NOTIFICATION)
+			states.clean_notifications(VK_MESSAGES_NOTIFICATION)
 
 			result = self.db.delete_telegram_messages()
 			if not result:
@@ -96,27 +84,52 @@ class Notifications:
 			logger.error(e)
 
 
-	def clean_telegram_messages(self):
+	def viewing_messages(self, service):
 		try:
-			states.clean_notifications('telegram_messages')
+			messages = states.get_notifications_type(service)
 
-			result = self.db.delete_telegram_messages()
-			if not result:
-				logger.error(ERROR_DELETE_TELEGRAM_MESSAGES)
+			if len(messages):
+				for message in messages:
+					match self.get_contact_by_id(message.contact_id):
+						case 0:
+							pass
+							# сообщение не от контакта
+						case -1:
+							logger.error(ERROR_GET_CONTACT_BY_CONTACT_ID)
+						case contact if type(contact) == tuple:
+							answer = f'Сообщение от контакта {contact[1]}'
+							if contact[2]:
+								answer += f' {contact[2]}'
+							
+							answer += f'. {message.message}'
+							synthesis_text(answer)
+			else:
+				if service == TELEGRAM_MESSAGES_NOTIFICATION:
+					synthesis_text('У вас нет новых сообщений в Телеграм')
+				elif service == VK_MESSAGES_NOTIFICATION:
+					synthesis_text('У вас нет новых сообщений в Вконтакте')
 
-			synthesis_text('Новые сообщения в Телеграм очищены')
 		except Exception as e:
 			logger.error(e)
 
 
-	def clean_vk_messages(self):
+	def clean_messages(self, service):
 		try:
-			states.clean_notifications('vk_messages')
+			states.clean_notifications(service)
+			result = None
 
-			result = self.db.delete_vk_messages()
+			if service == TELEGRAM_MESSAGES_NOTIFICATION:
+				result = self.db.delete_telegram_messages()
+			elif service == VK_MESSAGES_NOTIFICATION:
+				result = self.db.delete_vk_messages()
+
 			if not result:
-				logger.error(ERROR_DELETE_VK_MESSAGES)
+				logger.error(ERROR_DELETE_TELEGRAM_MESSAGES)
 
-			synthesis_text('Новые сообщения в Вконтакте очищены')
+			if service == TELEGRAM_MESSAGES_NOTIFICATION:
+				synthesis_text('Новые сообщения в Телеграм очищены')
+			elif service == VK_MESSAGES_NOTIFICATION:
+				synthesis_text('Новые сообщения в Вконтакте очищены')
+
 		except Exception as e:
 			logger.error(e)

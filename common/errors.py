@@ -1,5 +1,6 @@
 # Contacts
 ERROR_GET_CONTACTS = "Ошибка при получении контактов"
+ERROR_GET_CONTACT_BY_CONTACT_ID = 'Ошибка при получении контакта по contact_id'
 ERROR_GET_CONTACT_BY_TELEGRAM_ID = 'Ошибка при получении контакта по telegram_id'
 ERROR_GET_CONTACT_BY_VK_ID = 'Ошибка при получении контакта по vk_id'
 

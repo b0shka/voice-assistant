@@ -1,5 +1,6 @@
 from utils.logging import logger
 from common.states import states
+from common.notifications import *
 from handlers.list_requests.commands import COMMANDS, ALL_FUNCTIONS
 from handlers.list_requests.config import *
 from handlers.list_requests.functions_name import FunctionsName
@@ -40,7 +41,7 @@ class Handlers:
 				
 				case FunctionsName.CLEAN_NOTIFICATIONS:
 					states.change_waiting_response_state(False, FunctionsName.NOTIFICATIONS_TOPIC)
-					self.notifications.clean_all_notifications()
+					self.notifications.clean_notifications()
 
 
 				# Telegram
@@ -49,10 +50,10 @@ class Handlers:
 					self.notifications.waiting_select_action()
 
 				case FunctionsName.SHOW_TELEGRAM_MESSAGES:
-					self.notifications.viewing_telegram_messages()
+					self.notifications.viewing_messages(TELEGRAM_MESSAGES_NOTIFICATION)
 
 				case FunctionsName.CLEAN_TELEGRAM_MESSAGES:
-					self.notifications.clean_telegram_messages()
+					self.notifications.clean_messages(TELEGRAM_MESSAGES_NOTIFICATION)
 
 				case FunctionsName.SEND_TELEGRAM_MESSAGES:
 					pass
@@ -64,10 +65,10 @@ class Handlers:
 					self.notifications.waiting_select_action()
 
 				case FunctionsName.SHOW_VK_MESSAGES:
-					self.notifications.viewing_vk_messages()
+					self.notifications.viewing_messages(VK_MESSAGES_NOTIFICATION)
 
 				case FunctionsName.CLEAN_VK_MESSAGES:
-					self.notifications.clean_vk_messages()
+					self.notifications.clean_messages(VK_MESSAGES_NOTIFICATION)
 
 				case FunctionsName.SEND_VK_MESSAGES:
 					pass
