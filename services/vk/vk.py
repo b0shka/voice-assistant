@@ -1,5 +1,5 @@
 import vk_api
-from vk_api.longpoll import VkLongPoll
+from vk_api.longpoll import VkLongPoll, VkEventType
 from common.config import *
 from utils.logging import logger
 
@@ -15,9 +15,13 @@ class VK:
 			logger.error(e)
 
 
-	async def check_new_messages(self):
+	def check_new_messages(self):
 		try:
-			pass
+			logger.info('Start check new messages in VK')
+
+			for event in self.longpoll.listen():
+				if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
+					yield event
 		except Exception as e:
 			logger.error(e)
 

@@ -19,6 +19,20 @@ class Telegram:
 
 	async def check_new_messages(self):
 		try:
+			logger.info('Start check new messages in Telegram')
+
+			@self.client.on(events.NewMessage())
+			async def handler(event):
+				yield event.message.to_dict()
+
+			await self.client.start()
+			await self.client.run_until_disconnected()
+		except Exception as e:
+			logger.error(e)
+
+
+	def send_message(self):
+		try:
 			pass
 		except Exception as e:
 			logger.error(e)
