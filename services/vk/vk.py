@@ -36,5 +36,24 @@ class VK:
 					"random_id": 0
 				}
 			)
+			logger.info(f"Success send messages to {user_id}")
 		except Exception as e:
 			logger.error(e)
+
+
+	def get_user_data_by_id(self, user_id):
+		try:
+			user_data = self.session.method(
+				"users.get",
+				{
+					"user_ids": user_id
+				}
+			)
+
+			if user_data[0]:
+				return user_data[0]
+			else:
+				return 0
+		except Exception as e:
+			logger.error(e)
+			return -1

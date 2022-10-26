@@ -31,7 +31,14 @@ class Telegram:
 			logger.error(e)
 
 
-	def send_message(self):
+	def send_message(self, user_id, message):
+		try:
+			pass
+		except Exception as e:
+			logger.error(e)
+
+		
+	def get_user_data_by_id(self, user_id):
 		try:
 			pass
 		except Exception as e:

@@ -51,8 +51,8 @@ class Monitoring:
 			
 				match self.get_contact_by_from_id(from_id, TELEGRAM_MESSAGES_NOTIFICATION):
 					case 0:
-						pass
-						# сообщение не от контакта
+						pass 
+						# сообщение не от контакта или от канала/чата
 					case -1:
 						logger.error(ERROR_GET_CONTACT_BY_TELEGRAM_ID)
 					case contact if type(contact) == tuple:
@@ -91,8 +91,14 @@ class Monitoring:
 				if event.from_user:
 					match self.get_contact_by_from_id(event.user_id, VK_MESSAGES_NOTIFICATION):
 						case 0:
-							pass
-							# сообщение не от контакта
+							match self.vk.get_user_data_by_id(event.user_id):
+								case 0:
+									logger.error(FAILED_GET_USER_DATA_BY_ID)
+								case -1:
+									logger.error(ERROR_GET_USER_DATA_BY_ID)
+
+								case user if type(user) == map:
+									print(user)
 						case -1:
 							logger.error(ERROR_GET_CONTACT_BY_VK_ID)
 
