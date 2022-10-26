@@ -14,7 +14,7 @@ Voice assistant, for automating the processes of everyday life
 
 ---
 ## Requirements
-* Python 3.8+
+* Python 3.10+
 * Linux, Windows or macOS
 
 ---
@@ -77,4 +77,4 @@ The `scripts/` directory contains additional scripts for configuring the asset
 	- NAME_SESSION - path to the .session file
 
 
-[python-version]: https://img.shields.io/static/v1?label=Python&message=v3.8&color=blue
+[python-version]: https://img.shields.io/static/v1?label=Python&message=v3.10&color=blue

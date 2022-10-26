@@ -1,69 +1,83 @@
-from handlers.list_requests.actions import *
-from handlers.list_requests.functions import *
-from handlers.list_requests.pronouns import *
-from handlers.list_requests.functions_name import FunctionsName
-from handlers.list_requests.config import *
-from handlers.list_requests.descriptions import *
+from handlers.config import *
+from handlers.functions_name import FunctionsName
+from handlers.possible_words.actions import *
+from handlers.possible_words.functions import *
+from handlers.possible_words.pronouns import *
+from handlers.possible_words.prepositions import *
+from handlers.possible_words.descriptions import *
 
 
 ALL_FUNCTIONS = {
 	FunctionsName.NOTIFICATIONS_TOPIC: FunctionsName.NOTIFICATIONS_FUNCTIONS,
 	FunctionsName.TELEGRAM_MESSAGES_TOPIC: FunctionsName.TELEGRAM_MESSAGES_FUNCTIONS,
-	FunctionsName.VK_MESSAGES_TOPIC: FunctionsName.VK_MESSAGES_FUNCTIONS
+	FunctionsName.VK_MESSAGES_TOPIC: FunctionsName.VK_MESSAGES_FUNCTIONS,
+	FunctionsName.SOUND_TOPIC: FunctionsName.SOUND_FUNCTIONS
 }
 
 COMMANDS = {
 	FunctionsName.EXIT_TOPIC: {
 		FUNCTIONS: EXIT,
 		ACTIONS: (),
-		PRONOUNS: ()
+		ADDITIONALLY: ()
 	},
+
 	FunctionsName.SHOW_NOTIFICATIONS: {
 		FUNCTIONS: NOTIFICATIONS,
 		ACTIONS: SHOW + WATCH,
-		PRONOUNS: MY
+		ADDITIONALLY: MY
 	},
 	FunctionsName.CLEAN_NOTIFICATIONS: {
 		FUNCTIONS: NOTIFICATIONS,
 		ACTIONS: REMOVE,
-		PRONOUNS: ()
+		ADDITIONALLY: ()
 	},
 
 	FunctionsName.SHOW_TELEGRAM_MESSAGES: {
 		FUNCTIONS: (MESSAGES, TELEGRAM),
 		ACTIONS: SHOW + WATCH,
-		PRONOUNS: MY
+		ADDITIONALLY: MY
 	},
 	FunctionsName.CLEAN_TELEGRAM_MESSAGES: {
 		FUNCTIONS: (MESSAGES, TELEGRAM),
 		ACTIONS: REMOVE,
-		PRONOUNS: ()
+		ADDITIONALLY: ()
 	},
 	FunctionsName.SEND_TELEGRAM_MESSAGES: {
 		FUNCTIONS: (MESSAGES, TELEGRAM),
 		ACTIONS: SEND + WRITE + CREATE,
-		PRONOUNS: ()
+		ADDITIONALLY: ()
 	},
 
 	FunctionsName.SHOW_VK_MESSAGES: {
 		FUNCTIONS: (MESSAGES, VK),
 		ACTIONS: SHOW + WATCH,
-		PRONOUNS: MY
+		ADDITIONALLY: MY
 	},
 	FunctionsName.CLEAN_VK_MESSAGES: {
 		FUNCTIONS: (MESSAGES, VK),
 		ACTIONS: REMOVE,
-		PRONOUNS: ()
+		ADDITIONALLY: ()
 	},
 	FunctionsName.SEND_VK_MESSAGES: {
 		FUNCTIONS: (MESSAGES, VK),
 		ACTIONS: SEND + WRITE + CREATE,
-		PRONOUNS: ()
+		ADDITIONALLY: ()
 	},
 
 	FunctionsName.UPDATE_CONTACTS: {
 		FUNCTIONS: CONTACTS,
 		ACTIONS: UPDATE,
-		PRONOUNS: ()
+		ADDITIONALLY: ()
+	},
+
+	FunctionsName.SOUND_MUTE: {
+		FUNCTIONS: SOUND,
+		ACTIONS: DISABLE,
+		ADDITIONALLY: WITHOUT
+	},
+	FunctionsName.SOUND_TURN_ON: {
+		FUNCTIONS: SOUND,
+		ACTIONS: ENABLE,
+		ADDITIONALLY: WITH
 	}
 }

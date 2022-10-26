@@ -1,9 +1,9 @@
 from utils.logging import logger
 from common.states import states
 from common.notifications import *
-from handlers.list_requests.commands import COMMANDS, ALL_FUNCTIONS
-from handlers.list_requests.config import *
-from handlers.list_requests.functions_name import FunctionsName
+from handlers.commands import COMMANDS, ALL_FUNCTIONS
+from handlers.config import *
+from handlers.functions_name import FunctionsName
 from app.functions.notifications import Notifications
 from app.functions.communication import Communication
 
@@ -76,11 +76,19 @@ class Handlers:
 
 
 				# Contacts
-				case FunctionsName.CONTACTS_TOPIC:
-					pass
-
 				case FunctionsName.UPDATE_CONTACTS:
 					pass
+
+				
+				# Mute
+				case FunctionsName.SOUND_TOPIC:
+					states.change_waiting_response_state(True, FunctionsName.SOUND_TOPIC)
+
+				case FunctionsName.SOUND_MUTE:
+					states.change_mute_state(True)
+
+				case FunctionsName.SOUND_TURN_ON:
+					states.change_mute_state(False)
 
 
 				case _:
@@ -99,7 +107,7 @@ class Handlers:
 					topics[command] = {
 						FUNCTIONS: 0,
 						ACTIONS: 0,
-						PRONOUNS: 0
+						ADDITIONALLY: 0
 					}
 
 				number_occurrences = []
@@ -116,8 +124,8 @@ class Handlers:
 						if word in COMMANDS[command][ACTIONS]:
 							topics[command][ACTIONS] += 1
 
-						if word in COMMANDS[command][PRONOUNS]:
-							topics[command][PRONOUNS] += 1
+						if word in COMMANDS[command][ADDITIONALLY]:
+							topics[command][ADDITIONALLY] += 1
 
 				if type(COMMANDS[command][FUNCTIONS][0]) == tuple and len(number_occurrences) == len(COMMANDS[command][FUNCTIONS]):
 					topics[command][FUNCTIONS] += len(number_occurrences)
@@ -134,16 +142,17 @@ class Handlers:
 
 	def processing_topics(self, topics):
 		try:
+			print(topics)
 			if len(topics) > 1:
 				result_topic = {
 					NAME: None,
 					FUNCTIONS: 0,
 					ACTIONS: 0,
-					PRONOUNS: 0
+					ADDITIONALLY: 0
 				}
 
 				for topic in topics.keys():
-					if topics[topic][ACTIONS] or topics[topic][PRONOUNS]:
+					if topics[topic][ACTIONS] or topics[topic][ADDITIONALLY]:
 						if topics[topic][FUNCTIONS] > result_topic[FUNCTIONS]:
 							result_topic = topics[topic]
 							result_topic[NAME] = topic
@@ -152,7 +161,7 @@ class Handlers:
 							result_topic = topics[topic]
 							result_topic[NAME] = topic
 
-						elif topics[topic][PRONOUNS] > result_topic[PRONOUNS]:
+						elif topics[topic][ADDITIONALLY] > result_topic[ADDITIONALLY]:
 							result_topic = topics[topic]
 							result_topic[NAME] = topic
 

@@ -5,8 +5,8 @@ from common.errors import *
 from common.notifications import *
 from database.database_sqlite import DatabaseSQLite
 from handlers.handlers import Handlers
-#from utils.speech.vosk_recognition import listen
-from utils.speech.yandex_recognition_streaming import listen
+from utils.speech.vosk_recognition import listen
+#from utils.speech.yandex_recognition_streaming import listen
 from domain.Message import Message
 
 

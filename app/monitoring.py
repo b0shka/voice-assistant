@@ -98,7 +98,29 @@ class Monitoring:
 									logger.error(ERROR_GET_USER_DATA_BY_ID)
 
 								case user if type(user) == map:
-									print(user)
+									if not states.get_mute_state():
+										answer = f'У вас новое сообщение в Вконтакте от пользователя {user["first_name"]}'
+										if user["last_name"]:
+											answer += f' {user["last_name"]}'
+										synthesis_text(answer)
+
+									states.change_notifications(
+										VK_MESSAGES_NOTIFICATION, 
+										Message(
+											message = event.text,
+											first_name = user['first_name'],
+											last_name = user['last_name']
+										)
+									)
+
+									result = self.db.add_vk_message(
+										message = event.text, 
+										from_id = contact[0],
+										from_name = f'{user["first_name"]} {user["last_name"]}'
+									)
+									if result == 0:
+										logger.error(ERROR_ADD_VK_MESSAGE)
+
 						case -1:
 							logger.error(ERROR_GET_CONTACT_BY_VK_ID)
 

@@ -3,6 +3,7 @@
 class FunctionsName:
 
 	EXIT_TOPIC = 'exit'
+	UPDATE_CONTACTS = 'update_contacts'
 
 	NOTIFICATIONS_TOPIC = 'notifications'
 	SHOW_NOTIFICATIONS = 'show_notifications'
@@ -21,4 +22,7 @@ class FunctionsName:
 	SEND_VK_MESSAGES = 'send_vk_messages'
 	VK_MESSAGES_FUNCTIONS = (SHOW_VK_MESSAGES, CLEAN_VK_MESSAGES, SEND_VK_MESSAGES)
 
-	UPDATE_CONTACTS = 'update_contacts'
+	SOUND_TOPIC = 'sound'
+	SOUND_MUTE = 'sound_mute'
+	SOUND_TURN_ON = 'sound_turn_on'
+	SOUND_FUNCTIONS = (SOUND_MUTE, SOUND_TURN_ON)
