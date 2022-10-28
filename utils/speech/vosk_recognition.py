@@ -38,14 +38,14 @@ def listen():
 						answer = json.loads(rec.Result())
 						if answer['text']:
 							yield {
-								'text': answer['text'],
+								'text': answer['text'].lower(),
 								'mode': 'finite'
 							}
 					else:
 						answer = json.loads(rec.PartialResult())
 						if answer['partial']:
 							yield {
-								'text': answer['partial'],
+								'text': answer['partial'].lower(),
 								'mode': 'intermediate'
 							}
 						

@@ -2,6 +2,7 @@ import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 from common.config import *
 from utils.logging import logger
+from app.functions.messages import Messages
 
 
 class VK:
@@ -11,6 +12,8 @@ class VK:
 			self.session = vk_api.VkApi(token=VK_TOKEN)
 			self.longpoll = VkLongPoll(self.session)
 			logger.info('Success connect vk api')
+
+			self.messages = Messages()
 		except Exception as e:
 			logger.error(e)
 
@@ -21,7 +24,8 @@ class VK:
 
 			for event in self.longpoll.listen():
 				if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
-					yield event
+					self.messages.vk_message(event)
+					
 		except Exception as e:
 			logger.error(e)
 

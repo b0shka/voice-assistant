@@ -1,6 +1,7 @@
 from telethon.sync import TelegramClient, events
 from common.config import *
 from utils.logging import logger
+from app.functions.messages import Messages
 
 
 class Telegram:
@@ -13,6 +14,8 @@ class Telegram:
 				TELEGRAM_API_HASH
 			)
 			logger.info("Success connect telegram api")
+
+			self.messages = Messages()
 		except Exception as e:
 			logger.error(e)
 
@@ -23,7 +26,7 @@ class Telegram:
 
 			@self.client.on(events.NewMessage())
 			async def handler(event):
-				yield event.message.to_dict()
+				self.messages.telegram_message(event.message.to_dict())
 
 			await self.client.start()
 			await self.client.run_until_disconnected()

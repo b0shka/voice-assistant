@@ -20,7 +20,7 @@ class Handlers:
 
 	def processing(self, command):
 		try:
-			topic = self.determinate_topics(command.lower())
+			topic = self.determinate_topics(command)
 			print(topic)
 
 			match topic:
@@ -29,6 +29,9 @@ class Handlers:
 
 				case FunctionsName.EXIT_TOPIC:
 					return self.communication.exit()
+
+				case FunctionsName.UPDATE_CONTACTS:
+					pass
 
 
 				# Notifications
@@ -72,11 +75,6 @@ class Handlers:
 					self.notifications.clean_messages(VK_MESSAGES_NOTIFICATION)
 
 				case FunctionsName.SEND_VK_MESSAGES:
-					pass
-
-
-				# Contacts
-				case FunctionsName.UPDATE_CONTACTS:
 					pass
 
 				
@@ -142,7 +140,6 @@ class Handlers:
 
 	def processing_topics(self, topics):
 		try:
-			print(topics)
 			if len(topics) > 1:
 				result_topic = {
 					NAME: None,

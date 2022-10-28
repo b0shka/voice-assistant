@@ -14,6 +14,7 @@ class States:
 			TELEGRAM_MESSAGES_NOTIFICATION: [],
 			VK_MESSAGES_NOTIFICATION: []
 		}
+		self.CONTACTS = ()
 
 
 	def get_synthesis_work_state(self):
@@ -55,6 +56,14 @@ class States:
 	
 	def clean_notifications(self, type):
 		self.NOTIFICATIONS[type] = []
+
+
+	def get_contacts(self):
+		return self.CONTACTS
+
+	
+	def update_contacts(self, contacts):
+		self.CONTACTS = contacts
 
 
 states = States()

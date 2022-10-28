@@ -11,14 +11,16 @@ class Notifications:
 	def __init__(self):
 		try:
 			self.db = DatabaseSQLite()
-			self.contacts = self.db.get_contacts()
 		except Exception as e:
 			logger.error(e)
 
 
 	def get_contact_by_id(self, id):
 		try:
-			for contact in self.contacts:
+			if not id:
+				return 0
+
+			for contact in states.get_contacts():
 				if contact[0] == id:
 					return contact
 
@@ -90,19 +92,40 @@ class Notifications:
 
 			if len(messages):
 				for message in messages:
-					match self.get_contact_by_id(message.contact_id):
-						case 0:
-							pass
-							# сообщение не от контакта
-						case -1:
-							logger.error(ERROR_GET_CONTACT_BY_CONTACT_ID)
-						case contact if type(contact) == tuple:
-							answer = f'Сообщение от контакта {contact[1]}'
-							if contact[2]:
-								answer += f' {contact[2]}'
-							
-							answer += f'. {message.message}'
-							synthesis_text(answer)
+					if message.first_name:
+						answer = ''
+
+						if message.contact_id:
+							answer = f'Сообщение от контакта {message.first_name}'
+						else:
+							answer = f'Сообщение от пользователя {message.first_name}'
+
+						if message.last_name:
+							answer += f' {message.last_name}'
+						
+						answer += f'. {message.message}'
+						synthesis_text(answer)
+						
+					else:
+						match self.get_contact_by_id(message.contact_id):
+							case 0:
+								answer = f'Сообщение от неизвестного пользователя {message.first_name}'
+								if message.last_name:
+									answer += f' {message.last_name}'
+								
+								answer += f'. {message.message}'
+								synthesis_text(answer)
+
+							case -1:
+								logger.error(ERROR_GET_CONTACT_BY_CONTACT_ID)
+
+							case contact if type(contact) == tuple:
+								answer = f'Сообщение от контакта {contact[1]}'
+								if contact[2]:
+									answer += f' {contact[2]}'
+								
+								answer += f'. {message.message}'
+								synthesis_text(answer)
 			else:
 				if service == TELEGRAM_MESSAGES_NOTIFICATION:
 					synthesis_text('У вас нет новых сообщений в Телеграм')

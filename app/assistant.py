@@ -5,8 +5,8 @@ from common.errors import *
 from common.notifications import *
 from database.database_sqlite import DatabaseSQLite
 from handlers.handlers import Handlers
-from utils.speech.vosk_recognition import listen
-#from utils.speech.yandex_recognition_streaming import listen
+#from utils.speech.vosk_recognition import listen
+from utils.speech.yandex_recognition_streaming import listen
 from domain.Message import Message
 
 
@@ -16,9 +16,21 @@ class Assistant:
 		try:
 			self.db = DatabaseSQLite()
 			self.db.create_tables()
-			self.handlers = Handlers()
 
+			self.handlers = Handlers()
+			self.completion_contacts()
 			self.completion_notifications()
+		except Exception as e:
+			logger.error(e)
+
+
+	def completion_contacts(self):
+		try:
+			contacts = self.db.get_contacts()
+			if contacts == 0:
+				logger.error(ERROR_GET_CONTACTS)
+
+			states.update_contacts(contacts)
 		except Exception as e:
 			logger.error(e)
 
@@ -47,8 +59,11 @@ class Assistant:
 			states.change_notifications(
 				service,
 				Message(
-					message=message[1],
-					contact_id=message[2]
+					message = message[1],
+					contact_id = message[2],
+					from_id = message[3],
+					first_name = message[4],
+					last_name = message[5]
 				)
 			)
 		except Exception as e:

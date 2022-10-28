@@ -22,6 +22,9 @@ class DatabaseSQLite:
 							id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 							text TEXT NOT NULL,
 							contact_id INTEGER NOT NULL,
+							from_id INTEGER,
+							first_name VARCHAR(255),
+							last_name VARCHAR(255),
 							time DATETIME DEFAULT CURRENT_TIMESTAMP);""")
 
 			self.sql.execute(f"""CREATE TABLE IF NOT EXISTS `{TABLE_VK_MESSAGES}` (
@@ -29,30 +32,23 @@ class DatabaseSQLite:
 							text TEXT NOT NULL,
 							contact_id INTEGER,
 							from_id INTEGER,
-							from_name VARCHAR(255),
-							time DATETIME DEFAULT CURRENT_TIMESTAMP);""")
-
-			self.sql.execute(f"""CREATE TABLE IF NOT EXISTS `{TABLE_YANDEX_MESSAGES}` (
-							id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-							text TEXT NOT NULL,
-							contact_id INTEGER,
-							from_email VARCHAR(255),
-							from_name VARCHAR(255),
+							first_name VARCHAR(255),
+							last_name VARCHAR(255),
 							time DATETIME DEFAULT CURRENT_TIMESTAMP);""")
 
 			self.sql.execute(f"""CREATE TABLE IF NOT EXISTS `{TABLE_CONTACTS}` (
 							id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 							first_name VARCHAR(255) NOT NULL,
-							last_name VARCHAR(255) NOT NULL,
-							phone INTEGER NOT NULL,
-							telegram_id INTEGER NOT NULL,
-							vk_id INTEGER NOT NULL,
+							last_name VARCHAR(255),
+							phone INTEGER,
+							telegram_id INTEGER,
+							vk_id INTEGER,
 							email VARCHAR(255));""")
 
 			self.sql.execute(f"""CREATE TABLE IF NOT EXISTS `{TABLE_REQUESTS_ANSWERS}` (
 							id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 							text TEXT NOT NULL,
-							type VARCHAR(10) NOT NULL,
+							type VARCHAR(255) NOT NULL,
 							time DATETIME DEFAULT CURRENT_TIMESTAMP);""")
 
 			self.db.commit()
@@ -71,31 +67,37 @@ class DatabaseSQLite:
 			return 0
 
 
-	def add_telegram_message(self, message, contact_id):
+	def add_telegram_message(self, message, contact_id=None, from_id=None, first_name=None, last_name=None):
 		try:
-			self.sql.execute(f"INSERT INTO {TABLE_TELEGRAM_MESSAGES} (text, contact_id) VALUES (?, ?);", (message, contact_id))
+			if contact_id:
+				self.sql.execute(f"INSERT INTO {TABLE_TELEGRAM_MESSAGES} (text, contact_id, first_name, last_name) VALUES (?, ?, ?, ?);", (message, contact_id, first_name, last_name))
+			else:
+				self.sql.execute(f"INSERT INTO {TABLE_TELEGRAM_MESSAGES} (text, from_id, first_name, last_name) VALUES (?, ?, ?, ?);", (message, from_id, first_name, last_name))
 			self.db.commit()
 
-			logger.info(f"Добавлено новое сообщение из Telegram от контакта {contact_id}")
+			if contact_id:
+				logger.info(f"Добавлено новое сообщение из Telegram от пользователя {first_name} {last_name}")
+			else:
+				logger.info(f"Добавлено новое сообщение из Telegram от пользователя {first_name} {last_name}")
 			return 1
 		except Exception as e:
 			logger.error(e)
 			return 0
 
 
-	def add_vk_message(self, message, contact_id=None, from_id=None, from_name=None):
+	def add_vk_message(self, message, contact_id=None, from_id=None, first_name=None, last_name=None):
 		try:
 			if contact_id:
-				self.sql.execute(f"INSERT INTO {TABLE_VK_MESSAGES} (text, contact_id) VALUES (?, ?);", (message, contact_id))
+				self.sql.execute(f"INSERT INTO {TABLE_VK_MESSAGES} (text, contact_id, first_name, last_name) VALUES (?, ?, ?, ?);", (message, contact_id, first_name, last_name))
 			else:
-				self.sql.execute(f"INSERT INTO {TABLE_VK_MESSAGES} (text, from_id, from_name) VALUES (?, ?);", (message, from_id, from_name))
+				self.sql.execute(f"INSERT INTO {TABLE_VK_MESSAGES} (text, from_id, first_name, last_name) VALUES (?, ?, ?, ?);", (message, from_id, first_name, last_name))
 
 			self.db.commit()
 
 			if contact_id:
 				logger.info(f"Добавлено новое сообщение из VK от контакта {contact_id}")
 			else:
-				logger.info(f"Добавлено новое сообщение из VK от пользователя {from_name}")
+				logger.info(f"Добавлено новое сообщение из VK от пользователя {first_name} {last_name}")
 			return 1
 		except Exception as e:
 			logger.error(e)

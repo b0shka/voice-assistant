@@ -44,4 +44,4 @@ def record_audio(seconds):
 
 data = record_audio(3)
 text = recognizeShortAudio.recognize(data, format='lpcm', sampleRateHertz=sample_rate)
-print(text)
+print(text.lower())
