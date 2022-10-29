@@ -1,9 +1,11 @@
 import os
+import datetime
 from common.states import states
 from common.errors import *
 from common.notifications import *
 from database.database_sqlite import DatabaseSQLite
 from handlers.handlers import Handlers
+from handlers.config import TOPIC, FUNCTION
 from utils.logging import logger
 #from utils.speech.vosk_recognition import listen
 from utils.speech.yandex_recognition_streaming import listen
@@ -82,19 +84,41 @@ class Assistant:
 		'''
 		try:
 			intermediate_result = None
+			intended_topic = None
 
 			for command in listen():
+				time_now = datetime.datetime.now().time()
 				if command['mode'] == 'intermediate' and command['text'] != intermediate_result:
 					intermediate_result = command['text']
-					print('[INTERMEDIATE]', intermediate_result)
-					#self.handlers.determinate_intermediate_result(intermediate_result)
+					print(f'{time_now} [INTERMEDIATE] {intermediate_result}')
+					topic = self.handlers.determinate_topic(intermediate_result)
+
+					if topic and topic[TOPIC]:
+						if topic[FUNCTION] or self.handlers.check_topic_on_singleness(topic[TOPIC]):
+							states.change_waiting_result_recognition(False)
+							status_exit = self.handlers.processing(
+								command = intermediate_result,
+								default_topic = topic
+							)
+							if status_exit == 0:
+								os._exit(1)
+
+						else:
+							intended_topic = topic[TOPIC]
 
 				elif command['mode'] == 'finite':
-					print('[RESULT]', command['text'])
+					if not states.get_waiting_result_recognition():
+						states.change_waiting_result_recognition(True)
+					else:
+						print(f'{time_now} [RESULT] {command["text"]}')
 
-					status_exit = self.handlers.processing(command['text'])
-					if status_exit == 0:
-						os._exit(1)
+						if command['text']:
+							status_exit = self.handlers.processing(
+								command = command['text'],
+								intended_topic = intended_topic
+							)
+							if status_exit == 0:
+								os._exit(1)
 
 					#result = self.db.add_request_answer(command['text'], 'request')
 					#if not result:

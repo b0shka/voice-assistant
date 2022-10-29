@@ -1,9 +1,9 @@
 from utils.logging import logger
 from common.notifications import *
+from common.states import states
 from handlers.commands import TOPICS
 from handlers.config import *
 from handlers.functions_name import FunctionsName
-from handlers.handlers_topics import notifications, messages, communications
 from app.functions.notifications import Notifications
 from app.functions.communications import Communications
 
@@ -18,12 +18,14 @@ class Handlers:
 			logger.error(e)
 
 
-	def processing(self, command):
+	def processing(self, command, default_topic=None, intended_topic=None):
 		'''
 			Выполение действия (функции) исходя из темы команды
 		'''
 		try:
-			topic = self.determinate_topics(command)
+			topic = default_topic
+			if not topic:
+				topic = self.determinate_topic(command, intended_topic)
 			print(topic)
 
 			if not topic:
@@ -35,16 +37,62 @@ class Handlers:
 						return self.communication.exit()
 
 					case FunctionsName.NOTIFICATIONS_TOPIC:
-						notifications.handler_notifications_topic(topic['function'])
+						match topic['function']:
+							case None:
+								self.communication.waiting_select_action()
+								states.change_waiting_response_state(True)
+								states.change_topic(FunctionsName.NOTIFICATIONS_TOPIC)
+
+							case FunctionsName.SHOW_NOTIFICATIONS:
+								self.notifications.viewing_notifications()
+			
+							case FunctionsName.CLEAN_NOTIFICATIONS:
+								self.notifications.clean_notifications()
 
 					case FunctionsName.TELEGRAM_MESSAGES_TOPIC:
-						messages.handler_telegram_messages(topic['function'])
+						match topic['function']:
+							case None:
+								self.communication.waiting_select_action()
+								states.change_waiting_response_state(True)
+								states.change_topic(FunctionsName.TELEGRAM_MESSAGES_TOPIC)
+
+							case FunctionsName.SHOW_TELEGRAM_MESSAGES:
+								self.notifications.viewing_messages(TELEGRAM_MESSAGES_NOTIFICATION)
+							
+							case FunctionsName.CLEAN_TELEGRAM_MESSAGES:
+								self.notifications.clean_messages(TELEGRAM_MESSAGES_NOTIFICATION)
+
+							case FunctionsName.SEND_TELEGRAM_MESSAGES:
+								pass
 
 					case FunctionsName.VK_MESSAGES_TOPIC:
-						messages.handler_vk_messages(topic['function'])
+						match topic['function']:
+							case None:
+								self.communication.waiting_select_action()
+								states.change_waiting_response_state(True)
+								states.change_topic(FunctionsName.VK_MESSAGES_TOPIC)
+
+							case FunctionsName.SHOW_VK_MESSAGES:
+								self.notifications.viewing_messages(VK_MESSAGES_NOTIFICATION)
+							
+							case FunctionsName.CLEAN_VK_MESSAGES:
+								self.notifications.clean_messages(VK_MESSAGES_NOTIFICATION)
+
+							case FunctionsName.SEND_VK_MESSAGES:
+								pass
 
 					case FunctionsName.SOUND_TOPIC:
-						communications.handler_sound_topic(topic['function'])
+						match topic['function']:
+							case None:
+								self.communication.waiting_select_action()
+								states.change_waiting_response_state(True)
+								states.change_topic(FunctionsName.SOUND_TOPIC)
+								
+							case FunctionsName.SOUND_MUTE:
+								states.change_mute_state(True)
+							
+							case FunctionsName.SOUND_TURN_ON:
+								states.change_mute_state(False)
 
 					#case FunctionsName.UPDATE_CONTACTS:
 					#	self.communication.update_contacts()
@@ -56,30 +104,39 @@ class Handlers:
 			logger.error(e)
 
 
-	def determinate_intermediate_result(self, text_command):
+	def check_topic_on_singleness(self, topic):
 		'''
-			Определение возможных тем промежуточной команды
+			Проверка промежуточной темы на вложенность в нее функций
 		'''
 		try:
-			topics = self.determinate_topics(text_command)
-			print(topics)
+			if not TOPICS[topic][NESTED_FUNCTIONS]:
+				return True
+
+			return False
 		except Exception as e:
 			logger.error(e)
+			return False
 
 
-	def determinate_topics(self, text_command):
+	def determinate_topic(self, command, intended_topic=None):
 		'''
-			Определение всех допустимых тем комманды, по словам комманды
+			Определение темы комманды, по словам комманды
 		'''
 		try:
 			topics = {}
+			topics_list = []
 
-			for topic in TOPICS.keys():
+			if not intended_topic:
+				topics_list = TOPICS.keys()
+			else:
+				topics_list = [intended_topic]
+
+			for topic in topics_list:
 				if topic not in topics.keys():
 					topics[topic] = {FUNCTIONS: False}
 
 				number_occurrences = []
-				for word in text_command.split():
+				for word in command.split():
 					if word != '':
 						if type(TOPICS[topic][FUNCTIONS][0]) == tuple:
 							###
@@ -103,7 +160,7 @@ class Handlers:
 							ADDITIONALLY: 0
 						}
 
-						for word in text_command.split():
+						for word in command.split():
 							if word in TOPICS[topic][NESTED_FUNCTIONS][function][ACTIONS]:
 								topics[topic][NESTED_FUNCTIONS][function][ACTIONS] += 1
 
@@ -117,16 +174,16 @@ class Handlers:
 				elif not topics[topic][FUNCTIONS]:
 					del topics[topic]
 
-			return self.processing_topics(topics)
+			return self.processing_functions(topics)
 
 		except Exception as e:
 			logger.error(e)
 			return None
 
 
-	def processing_topics(self, topics):
+	def processing_functions(self, topics):
 		'''
-			Обработка всех возможных тем комманды и выявление наиболее подходящей
+			Обработка возможных функций темы и выявление наиболее подходящей
 		'''
 		try:
 			if len(topics) == 0:

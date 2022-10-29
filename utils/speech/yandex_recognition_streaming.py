@@ -33,6 +33,8 @@ def gen_audio_capture_function():
 		while True:
 			if states.get_synthesis_work_state():
 				break
+			if not states.get_waiting_result_recognition():
+				break
 			yield stream.read(4000)
 	finally:
 		stream.stop_stream()
@@ -44,6 +46,13 @@ def listen():
 	while True:
 		if not states.get_synthesis_work_state():
 			for data in data_streaming_recognition.recognize(gen_audio_capture_function):
+				if not states.get_waiting_result_recognition():
+					yield {
+						'text': None,
+						'mode': 'finite'
+					}
+					break
+
 				if data[1]:
 					yield {
 						'text': data[0][0].lower(),
