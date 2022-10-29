@@ -30,10 +30,6 @@ class Notifications:
 			return -1
 
 
-	def waiting_select_action(self):
-		synthesis_text('Какое действие вы хотите выполнить?')
-
-
 	def viewing_notifications(self):
 		try:
 			notifications = states.get_notifications()

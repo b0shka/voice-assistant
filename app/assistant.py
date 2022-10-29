@@ -1,10 +1,10 @@
 import os
-from utils.logging import logger
 from common.states import states
 from common.errors import *
 from common.notifications import *
 from database.database_sqlite import DatabaseSQLite
 from handlers.handlers import Handlers
+from utils.logging import logger
 #from utils.speech.vosk_recognition import listen
 from utils.speech.yandex_recognition_streaming import listen
 from domain.Message import Message
@@ -15,9 +15,9 @@ class Assistant:
 	def __init__(self):
 		try:
 			self.db = DatabaseSQLite()
-			self.db.create_tables()
-
 			self.handlers = Handlers()
+			
+			self.db.create_tables()
 			self.completion_contacts()
 			self.completion_notifications()
 		except Exception as e:
@@ -25,6 +25,9 @@ class Assistant:
 
 
 	def completion_contacts(self):
+		'''
+			Добавление контактов в глобальное состояние
+		'''
 		try:
 			contacts = self.db.get_contacts()
 			if contacts == 0:
@@ -36,6 +39,9 @@ class Assistant:
 
 	
 	def completion_notifications(self):
+		'''
+			Добавление уведомлений (если такие существуют) в глобальное состояние
+		'''
 		try:
 			telegram_messages = self.db.get_telegram_messages()
 			if telegram_messages != 0:
@@ -71,6 +77,9 @@ class Assistant:
 
 
 	def start(self):
+		'''
+			Начало прослушивания микрофона и выполнение комманд
+		'''
 		try:
 			intermediate_result = None
 
@@ -78,6 +87,7 @@ class Assistant:
 				if command['mode'] == 'intermediate' and command['text'] != intermediate_result:
 					intermediate_result = command['text']
 					print('[INTERMEDIATE]', intermediate_result)
+					self.handlers.determinate_intermediate_result(intermediate_result)
 
 				elif command['mode'] == 'finite':
 					print('[RESULT]', command['text'])

@@ -35,7 +35,11 @@ class Messages:
 
 
 	def telegram_message(self, message):
+		'''
+			Обработка полученного нового сообщения из Телеграм
+		'''
 		try:
+			# тут будет ошибка, если сообщение отправлено не от человека, а от канала или чата
 			from_id = int(message['from_id']['user_id'])
 			
 			match self.get_contact_by_from_id(from_id):
@@ -76,6 +80,9 @@ class Messages:
 
 
 	def vk_message(self, event):
+		'''
+			Обработка полученного нового сообщения из ВКонтакте
+		'''
 		try:
 			if event.from_user:
 				match self.get_contact_by_from_id(event.user_id):

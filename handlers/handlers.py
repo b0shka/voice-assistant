@@ -19,6 +19,9 @@ class Handlers:
 
 
 	def processing(self, command):
+		'''
+			Выполение действия (функции) исходя из темы (смысла) команды
+		'''
 		try:
 			topic = self.determinate_topics(command)
 			print(topic)
@@ -31,13 +34,13 @@ class Handlers:
 					return self.communication.exit()
 
 				case FunctionsName.UPDATE_CONTACTS:
-					pass
+					self.communication.update_contacts()
 
 
 				# Notifications
 				case FunctionsName.NOTIFICATIONS_TOPIC:
 					states.change_waiting_response_state(True, FunctionsName.NOTIFICATIONS_TOPIC)
-					self.notifications.waiting_select_action()
+					self.communication.waiting_select_action()
 
 				case FunctionsName.SHOW_NOTIFICATIONS:
 					states.change_waiting_response_state(False, FunctionsName.NOTIFICATIONS_TOPIC)
@@ -51,7 +54,7 @@ class Handlers:
 				# Telegram
 				case FunctionsName.TELEGRAM_MESSAGES_TOPIC:
 					states.change_waiting_response_state(True, FunctionsName.TELEGRAM_MESSAGES_TOPIC)
-					self.notifications.waiting_select_action()
+					self.communication.waiting_select_action()
 
 				case FunctionsName.SHOW_TELEGRAM_MESSAGES:
 					self.notifications.viewing_messages(TELEGRAM_MESSAGES_NOTIFICATION)
@@ -66,7 +69,7 @@ class Handlers:
 				# VK
 				case FunctionsName.VK_MESSAGES_TOPIC:
 					states.change_waiting_response_state(True, FunctionsName.VK_MESSAGES_TOPIC)
-					self.notifications.waiting_select_action()
+					self.communication.waiting_select_action()
 
 				case FunctionsName.SHOW_VK_MESSAGES:
 					self.notifications.viewing_messages(VK_MESSAGES_NOTIFICATION)
@@ -81,6 +84,7 @@ class Handlers:
 				# Mute
 				case FunctionsName.SOUND_TOPIC:
 					states.change_waiting_response_state(True, FunctionsName.SOUND_TOPIC)
+					self.communication.waiting_select_action()
 
 				case FunctionsName.SOUND_MUTE:
 					states.change_mute_state(True)
@@ -96,7 +100,21 @@ class Handlers:
 			logger.error(e)
 
 
+	def determinate_intermediate_result(self, text_command):
+		'''
+			Определение возможных тем промежуточной команды
+		'''
+		try:
+			topics = self.determinate_topics(text_command)
+			print(topics)
+		except Exception as e:
+			logger.error(e)
+
+
 	def determinate_topics(self, text_command):
+		'''
+			Определение всех допустимых тем комманды, по словам комманды
+		'''
 		try:
 			topics = {}
 
@@ -139,6 +157,9 @@ class Handlers:
 
 
 	def processing_topics(self, topics):
+		'''
+			Обработка всех возможных тем комманды и выявление наиболее подходящей
+		'''
 		try:
 			if len(topics) > 1:
 				result_topic = {

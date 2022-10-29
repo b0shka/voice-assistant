@@ -1,5 +1,6 @@
 import pyaudio
 from speechkit import DataStreamingRecognition
+from common.states import states
 from utils.speech.config import session
 
 
@@ -30,6 +31,8 @@ def gen_audio_capture_function():
 	)
 	try:
 		while True:
+			if states.get_synthesis_work_state():
+				break
 			yield stream.read(4000)
 	finally:
 		stream.stop_stream()
@@ -39,14 +42,15 @@ def gen_audio_capture_function():
 
 def listen():
 	while True:
-		for data in data_streaming_recognition.recognize(gen_audio_capture_function):
-			if data[1]:
-				yield {
-					'text': data[0][0].lower(),
-					'mode': 'finite'
-				}
-			else:
-				yield {
-					'text': data[0][0].lower(),
-					'mode': 'intermediate'
-				}
+		if not states.get_synthesis_work_state():
+			for data in data_streaming_recognition.recognize(gen_audio_capture_function):
+				if data[1]:
+					yield {
+						'text': data[0][0].lower(),
+						'mode': 'finite'
+					}
+				else:
+					yield {
+						'text': data[0][0].lower(),
+						'mode': 'intermediate'
+					}
