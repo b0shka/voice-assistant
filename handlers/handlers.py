@@ -1,11 +1,11 @@
 from utils.logging import logger
-from common.states import states
 from common.notifications import *
-from handlers.commands import COMMANDS, ALL_FUNCTIONS
+from handlers.commands import TOPICS
 from handlers.config import *
 from handlers.functions_name import FunctionsName
+from handlers.handlers_topics import notifications, messages, communications
 from app.functions.notifications import Notifications
-from app.functions.communication import Communication
+from app.functions.communications import Communications
 
 
 class Handlers:
@@ -13,88 +13,44 @@ class Handlers:
 	def __init__(self):
 		try:
 			self.notifications = Notifications()
-			self.communication = Communication()
+			self.communication = Communications()
 		except Exception as e:
 			logger.error(e)
 
 
 	def processing(self, command):
 		'''
-			Выполение действия (функции) исходя из темы (смысла) команды
+			Выполение действия (функции) исходя из темы команды
 		'''
 		try:
 			topic = self.determinate_topics(command)
 			print(topic)
 
-			match topic:
-				case None:
-					self.communication.nothing_found()
+			if not topic:
+				self.communication.nothing_found()
 
-				case FunctionsName.EXIT_TOPIC:
-					return self.communication.exit()
+			else:
+				match topic['topic']:
+					case FunctionsName.EXIT_TOPIC:
+						return self.communication.exit()
 
-				case FunctionsName.UPDATE_CONTACTS:
-					self.communication.update_contacts()
+					case FunctionsName.NOTIFICATIONS_TOPIC:
+						notifications.handler_notifications_topic(topic['function'])
 
+					case FunctionsName.TELEGRAM_MESSAGES_TOPIC:
+						messages.handler_telegram_messages(topic['function'])
 
-				# Notifications
-				case FunctionsName.NOTIFICATIONS_TOPIC:
-					states.change_waiting_response_state(True, FunctionsName.NOTIFICATIONS_TOPIC)
-					self.communication.waiting_select_action()
+					case FunctionsName.VK_MESSAGES_TOPIC:
+						messages.handler_vk_messages(topic['function'])
 
-				case FunctionsName.SHOW_NOTIFICATIONS:
-					states.change_waiting_response_state(False, FunctionsName.NOTIFICATIONS_TOPIC)
-					self.notifications.viewing_notifications()
-				
-				case FunctionsName.CLEAN_NOTIFICATIONS:
-					states.change_waiting_response_state(False, FunctionsName.NOTIFICATIONS_TOPIC)
-					self.notifications.clean_notifications()
+					case FunctionsName.SOUND_TOPIC:
+						communications.handler_sound_topic(topic['function'])
 
+					#case FunctionsName.UPDATE_CONTACTS:
+					#	self.communication.update_contacts()
 
-				# Telegram
-				case FunctionsName.TELEGRAM_MESSAGES_TOPIC:
-					states.change_waiting_response_state(True, FunctionsName.TELEGRAM_MESSAGES_TOPIC)
-					self.communication.waiting_select_action()
-
-				case FunctionsName.SHOW_TELEGRAM_MESSAGES:
-					self.notifications.viewing_messages(TELEGRAM_MESSAGES_NOTIFICATION)
-
-				case FunctionsName.CLEAN_TELEGRAM_MESSAGES:
-					self.notifications.clean_messages(TELEGRAM_MESSAGES_NOTIFICATION)
-
-				case FunctionsName.SEND_TELEGRAM_MESSAGES:
-					pass
-
-
-				# VK
-				case FunctionsName.VK_MESSAGES_TOPIC:
-					states.change_waiting_response_state(True, FunctionsName.VK_MESSAGES_TOPIC)
-					self.communication.waiting_select_action()
-
-				case FunctionsName.SHOW_VK_MESSAGES:
-					self.notifications.viewing_messages(VK_MESSAGES_NOTIFICATION)
-
-				case FunctionsName.CLEAN_VK_MESSAGES:
-					self.notifications.clean_messages(VK_MESSAGES_NOTIFICATION)
-
-				case FunctionsName.SEND_VK_MESSAGES:
-					pass
-
-				
-				# Mute
-				case FunctionsName.SOUND_TOPIC:
-					states.change_waiting_response_state(True, FunctionsName.SOUND_TOPIC)
-					self.communication.waiting_select_action()
-
-				case FunctionsName.SOUND_MUTE:
-					states.change_mute_state(True)
-
-				case FunctionsName.SOUND_TURN_ON:
-					states.change_mute_state(False)
-
-
-				case _:
-					self.communication.nothing_found()
+					case _:
+						self.communication.nothing_found()
 
 		except Exception as e:
 			logger.error(e)
@@ -118,36 +74,48 @@ class Handlers:
 		try:
 			topics = {}
 
-			for command in COMMANDS.keys():
-				if command not in topics.keys():
-					topics[command] = {
-						FUNCTIONS: 0,
-						ACTIONS: 0,
-						ADDITIONALLY: 0
-					}
+			for topic in TOPICS.keys():
+				if topic not in topics.keys():
+					topics[topic] = {FUNCTIONS: False}
 
 				number_occurrences = []
 				for word in text_command.split():
 					if word != '':
-						if type(COMMANDS[command][FUNCTIONS][0]) == tuple:
-							for index, func in enumerate(COMMANDS[command][FUNCTIONS]):
-								if word in func and index not in number_occurrences:
+						if type(TOPICS[topic][FUNCTIONS][0]) == tuple:
+							###
+							for index, func in enumerate(TOPICS[topic][FUNCTIONS]):
+								if index not in number_occurrences and word in func:
 									number_occurrences.append(index)
 						else:
-							if word in COMMANDS[command][FUNCTIONS]:
-								topics[command][FUNCTIONS] += 1
-						
-						if word in COMMANDS[command][ACTIONS]:
-							topics[command][ACTIONS] += 1
+							if word in TOPICS[topic][FUNCTIONS]:
+								topics[topic][FUNCTIONS] = True
+								break
 
-						if word in COMMANDS[command][ADDITIONALLY]:
-							topics[command][ADDITIONALLY] += 1
+				if type(TOPICS[topic][FUNCTIONS][0]) == tuple and len(number_occurrences) == len(TOPICS[topic][FUNCTIONS]):
+					topics[topic][FUNCTIONS] = True
 
-				if type(COMMANDS[command][FUNCTIONS][0]) == tuple and len(number_occurrences) == len(COMMANDS[command][FUNCTIONS]):
-					topics[command][FUNCTIONS] += len(number_occurrences)
+				if topics[topic][FUNCTIONS] and TOPICS[topic][NESTED_FUNCTIONS]:
+					topics[topic][NESTED_FUNCTIONS] = {}
 
-				if topics[command][FUNCTIONS] == 0:
-					del topics[command]
+					for function in TOPICS[topic][NESTED_FUNCTIONS].keys():
+						topics[topic][NESTED_FUNCTIONS][function] = {
+							ACTIONS: 0,
+							ADDITIONALLY: 0
+						}
+
+						for word in text_command.split():
+							if word in TOPICS[topic][NESTED_FUNCTIONS][function][ACTIONS]:
+								topics[topic][NESTED_FUNCTIONS][function][ACTIONS] += 1
+
+							if word in TOPICS[topic][NESTED_FUNCTIONS][function][ADDITIONALLY]:
+								topics[topic][NESTED_FUNCTIONS][function][ADDITIONALLY] += 1
+
+						if not topics[topic][NESTED_FUNCTIONS][function][ACTIONS] and \
+						not topics[topic][NESTED_FUNCTIONS][function][ADDITIONALLY]:
+							del topics[topic][NESTED_FUNCTIONS][function]
+
+				elif not topics[topic][FUNCTIONS]:
+					del topics[topic]
 
 			return self.processing_topics(topics)
 
@@ -161,40 +129,48 @@ class Handlers:
 			Обработка всех возможных тем комманды и выявление наиболее подходящей
 		'''
 		try:
-			if len(topics) > 1:
-				result_topic = {
-					NAME: None,
-					FUNCTIONS: 0,
-					ACTIONS: 0,
-					ADDITIONALLY: 0
-				}
-
-				for topic in topics.keys():
-					if topics[topic][ACTIONS] or topics[topic][ADDITIONALLY]:
-						if topics[topic][FUNCTIONS] > result_topic[FUNCTIONS]:
-							result_topic = topics[topic]
-							result_topic[NAME] = topic
-
-						elif topics[topic][ACTIONS] > result_topic[ACTIONS]:
-							result_topic = topics[topic]
-							result_topic[NAME] = topic
-
-						elif topics[topic][ADDITIONALLY] > result_topic[ADDITIONALLY]:
-							result_topic = topics[topic]
-							result_topic[NAME] = topic
-
-				if result_topic['name']:
-					return result_topic['name']
-
-				for func in ALL_FUNCTIONS.keys():
-					if tuple(topics.keys()) == ALL_FUNCTIONS[func]:
-						return func
-
-			list_topics = list(topics.keys())
-			if len(list_topics) >= 1:
-				return list_topics[0]
-			else:
+			if len(topics) == 0:
 				return None
+			
+			else:
+				first_topic = next(iter(topics))
+
+				if NESTED_FUNCTIONS not in topics[first_topic].keys() or not topics[first_topic][NESTED_FUNCTIONS]:
+					return {
+						TOPIC: first_topic,
+						FUNCTION: None
+					}
+
+				else:
+					if len(topics[first_topic][NESTED_FUNCTIONS].keys()) == 1:
+						return {
+							TOPIC: first_topic,
+							FUNCTION: next(iter(topics[first_topic][NESTED_FUNCTIONS]))
+						}
+
+					else:
+						result_function = {
+							NAME: None,
+							ACTIONS: 0,
+							ADDITIONALLY: 0
+						}
+
+						for function in topics[first_topic][NESTED_FUNCTIONS].keys():
+							if topics[first_topic][NESTED_FUNCTIONS][function][ACTIONS] > result_function[ACTIONS]:
+								result_function = topics[first_topic][NESTED_FUNCTIONS][function]
+								result_function[NAME] = function
+
+							elif topics[first_topic][NESTED_FUNCTIONS][function][ADDITIONALLY] > result_function[ADDITIONALLY]:
+								result_function = topics[first_topic][NESTED_FUNCTIONS][function]
+								result_function[NAME] = function
+
+						if result_function[NAME]:
+							return {
+								TOPIC: first_topic,
+								FUNCTION: result_function[NAME]
+							}
+						else:
+							return None
 
 		except Exception as e:
 			logger.error(e)

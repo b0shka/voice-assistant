@@ -87,7 +87,7 @@ class Assistant:
 				if command['mode'] == 'intermediate' and command['text'] != intermediate_result:
 					intermediate_result = command['text']
 					print('[INTERMEDIATE]', intermediate_result)
-					self.handlers.determinate_intermediate_result(intermediate_result)
+					#self.handlers.determinate_intermediate_result(intermediate_result)
 
 				elif command['mode'] == 'finite':
 					print('[RESULT]', command['text'])
@@ -96,9 +96,9 @@ class Assistant:
 					if status_exit == 0:
 						os._exit(1)
 
-					result = self.db.add_request_answer(command['text'], 'request')
-					if not result:
-						logger.error(ERROR_ADD_REQUEST_ANSWER)
+					#result = self.db.add_request_answer(command['text'], 'request')
+					#if not result:
+					#	logger.error(ERROR_ADD_REQUEST_ANSWER)
 
 					#if answer:
 					#	result = self.db.add_request_answer(answer, 'answer')

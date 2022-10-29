@@ -26,7 +26,7 @@ class Telegram:
 
 			@self.client.on(events.NewMessage())
 			async def handler(event):
-				self.messages.telegram_message(event.message.to_dict())
+				self.messages.new_telegram_message(event.message.to_dict())
 
 			await self.client.start()
 			await self.client.run_until_disconnected()

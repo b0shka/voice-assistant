@@ -6,7 +6,7 @@ from utils.speech.yandex_synthesis import synthesis_text
 from database.database_sqlite import DatabaseSQLite
 
 
-class Communication:
+class Communications:
 
 	def __init__(self):
 		try:

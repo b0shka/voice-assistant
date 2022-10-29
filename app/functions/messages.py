@@ -34,7 +34,7 @@ class Messages:
 			return -1
 
 
-	def telegram_message(self, message):
+	def new_telegram_message(self, message):
 		'''
 			Обработка полученного нового сообщения из Телеграм
 		'''
@@ -42,7 +42,7 @@ class Messages:
 			# тут будет ошибка, если сообщение отправлено не от человека, а от канала или чата
 			from_id = int(message['from_id']['user_id'])
 			
-			match self.get_contact_by_from_id(from_id):
+			match self.get_contact_by_from_id(from_id, TELEGRAM_MESSAGES_NOTIFICATION):
 				case -1:
 					logger.error(ERROR_GET_CONTACT_BY_TELEGRAM_ID)
 
@@ -79,13 +79,13 @@ class Messages:
 			logger.error(e)
 
 
-	def vk_message(self, event):
+	def new_vk_message(self, event):
 		'''
 			Обработка полученного нового сообщения из ВКонтакте
 		'''
 		try:
 			if event.from_user:
-				match self.get_contact_by_from_id(event.user_id):
+				match self.get_contact_by_from_id(event.user_id, VK_MESSAGES_NOTIFICATION):
 					case -1:
 						logger.error(ERROR_GET_CONTACT_BY_VK_ID)
 

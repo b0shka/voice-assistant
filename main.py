@@ -8,9 +8,9 @@ def main():
 	try:
 		assistant = Assistant()
 		monitoring = Monitoring()
-		monitoring_thread = threading.Thread(target=monitoring.start)
+		#monitoring_thread = threading.Thread(target=monitoring.start)
 
-		monitoring_thread.start()
+		#monitoring_thread.start()
 		assistant.start()
 	except Exception as e:
 		logger.error(e)

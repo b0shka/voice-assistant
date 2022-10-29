@@ -5,16 +5,15 @@ class States:
 
 	def __init__(self):
 		self.SYNTHESIS_WORK = False
-		self.WAITING_RESPONSE = {
-			'status': False,
-			'topic': None
-		}
+		self.WAITING_RESPONSE = False
+		self.TOPIC = None
 		self.MUTE = False
+		self.CONTACTS = ()
+
 		self.NOTIFICATIONS = {
 			TELEGRAM_MESSAGES_NOTIFICATION: [],
 			VK_MESSAGES_NOTIFICATION: []
 		}
-		self.CONTACTS = ()
 
 
 	def get_synthesis_work_state(self):
@@ -29,9 +28,16 @@ class States:
 		return self.WAITING_RESPONSE
 
 
-	def change_waiting_response_state(self, state, topic):
-		self.WAITING_RESPONSE['status'] = state
-		self.WAITING_RESPONSE['topic'] = topic
+	def change_waiting_response_state(self, state):
+		self.WAITING_RESPONSE = state
+
+	
+	def get_topic(self):
+		return self.TOPIC
+
+
+	def change_topic(self, topic):
+		self.TOPIC = topic
 
 
 	def get_mute_state(self):
@@ -46,7 +52,7 @@ class States:
 		return self.NOTIFICATIONS
 
 
-	def get_notifications_type(self, type):
+	def get_notifications_by_type(self, type):
 		return self.NOTIFICATIONS[type]
 
 

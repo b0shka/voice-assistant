@@ -24,7 +24,7 @@ class VK:
 
 			for event in self.longpoll.listen():
 				if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
-					self.messages.vk_message(event)
+					self.messages.new_vk_message(event)
 					
 		except Exception as e:
 			logger.error(e)

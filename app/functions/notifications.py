@@ -84,7 +84,7 @@ class Notifications:
 
 	def viewing_messages(self, service):
 		try:
-			messages = states.get_notifications_type(service)
+			messages = states.get_notifications_by_type(service)
 
 			if len(messages):
 				for message in messages:
