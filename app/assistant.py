@@ -4,11 +4,12 @@ from common.states import states
 from common.errors import *
 from common.notifications import *
 from database.database_sqlite import DatabaseSQLite
-from handlers.handlers import Handlers
+from handlers.handler import Handler
 from handlers.config import TOPIC, FUNCTION
 from utils.logging import logger
 #from utils.speech.vosk_recognition import listen
 from utils.speech.yandex_recognition_streaming import listen
+from utils.speech.config import FINITE, INTERMEDIATE
 from domain.Message import Message
 
 
@@ -17,7 +18,7 @@ class Assistant:
 	def __init__(self):
 		try:
 			self.db = DatabaseSQLite()
-			self.handlers = Handlers()
+			self.handler = Handler()
 			
 			self.db.create_tables()
 			self.completion_contacts()
@@ -87,15 +88,19 @@ class Assistant:
 
 			for command in listen():
 				time_now = datetime.datetime.now().time()
-				
-				if command['mode'] == 'intermediate':
+
+				if command['mode'] == INTERMEDIATE:
+					# обработка промежуточного результата распознавания речи
+
 					print(f'{time_now} [INTERMEDIATE] {command["text"]}')
-					topic = self.handlers.determinate_topic(command['text'])
+					topic = self.handler.determinate_topic(command['text'])
 
 					if topic and topic[TOPIC] and not states.get_action_without_function_state():
-						if topic[FUNCTION] or self.handlers.check_topic_on_singleness(topic[TOPIC]):
+						# если была получена тема и в команде присутствует функция
+						if topic[FUNCTION] or self.handler.check_topic_on_singleness(topic[TOPIC]):
+							# если была получена вложенная функция или у темы в принципе их нет
 							states.change_waiting_result_recognition(False)
-							status_exit = self.handlers.processing(
+							status_exit = self.handler.processing_command(
 								command = command['text'],
 								default_topic = topic
 							)
@@ -105,14 +110,18 @@ class Assistant:
 						else:
 							intended_topic = topic[TOPIC]
 
-				elif command['mode'] == 'finite':
+				elif command['mode'] == FINITE:
+					# обработка конечного результата распознавания речи
+
 					if not states.get_waiting_result_recognition():
+						# если не ожидается получение конечного результата распознавания речи
 						states.change_waiting_result_recognition(True)
 					else:
+						# был получен конечный результат распознавания речи
 						print(f'{time_now} [RESULT] {command["text"]}')
 
 						if command['text']:
-							status_exit = self.handlers.processing(
+							status_exit = self.handler.processing_command(
 								command = command['text'],
 								intended_topic = intended_topic
 							)

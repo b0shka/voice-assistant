@@ -11,10 +11,7 @@ from utils.speech.yandex_synthesis import synthesis_text
 class Messages:
 
 	def __init__(self):
-		try:
-			self.db = DatabaseSQLite()
-		except Exception as e:
-			logger.error(e)
+		self.db = DatabaseSQLite()
 
 
 	def get_contact_by_from_id(self, id, service):

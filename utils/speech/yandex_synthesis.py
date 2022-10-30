@@ -35,6 +35,7 @@ def synthesis_audio_bytes(audio_data):
 
 
 def synthesis_text(text):
+	# пока происходит параллельный синтез речи, ничего не делать
 	while states.get_synthesis_work_state(): pass
 	states.change_synthesis_work_state(True)
 

@@ -1,143 +1,35 @@
 from utils.logging import logger
 from common.notifications import *
 from common.states import states
-from handlers.commands import TOPICS
+from handlers.topics import TOPICS
 from handlers.config import *
-from handlers.functions_name import FunctionsName
-from app.functions.notifications import Notifications
-from app.functions.communications import Communications
+from handlers.performing_functions import PerformingFunctions
 
 
-class Handlers:
+class Handler:
 
 	def __init__(self):
-		try:
-			self.notifications = Notifications()
-			self.communication = Communications()
-		except Exception as e:
-			logger.error(e)
+		self.performing_functions = PerformingFunctions()
 
 
-	def processing(self, command, default_topic=None, intended_topic=None):
+	def processing_command(self, command: str, default_topic=None, intended_topic=None):
 		'''
 			Выполение действия (функции) исходя из темы команды
 		'''
 		try:
 			topic = default_topic
 			if not topic:
+				# если нет уже полученной темы (при получении промежуточных результатов распознавания речи), то определять ее "вручную"
 				topic = self.determinate_topic(command, intended_topic)
+
 			print(topic)
-
-			if states.get_waiting_response_state() and (not topic or topic[TOPIC] != states.get_topic()):
-				self.communication.action_not_found_in_topic()
-
-			elif not topic:
-				self.communication.nothing_found()
-
-			else:
-				match topic[TOPIC]:
-					case FunctionsName.EXIT_TOPIC:
-						return self.communication.exit()
-
-					case FunctionsName.NOTIFICATIONS_TOPIC:
-						states.change_topic(FunctionsName.NOTIFICATIONS_TOPIC)
-						
-						match topic[FUNCTION]:
-							case None:
-								self.communication.waiting_select_action()
-								states.change_waiting_response_state(True)
-
-							case FunctionsName.SHOW_NOTIFICATIONS:
-								self.notifications.viewing_notifications()
-								states.change_waiting_response_state(False)
-			
-							case FunctionsName.CLEAN_NOTIFICATIONS:
-								self.notifications.clean_notifications()
-								states.change_waiting_response_state(False)
-
-					case FunctionsName.TELEGRAM_MESSAGES_TOPIC:
-						states.change_topic(FunctionsName.TELEGRAM_MESSAGES_TOPIC)
-
-						match topic[FUNCTION]:
-							case None:
-								self.communication.waiting_select_action()
-								states.change_waiting_response_state(True)
-
-							case FunctionsName.SHOW_TELEGRAM_MESSAGES:
-								self.notifications.viewing_messages(TELEGRAM_MESSAGES_NOTIFICATION)
-								states.change_waiting_response_state(False)
-							
-							case FunctionsName.CLEAN_TELEGRAM_MESSAGES:
-								self.notifications.clean_messages(TELEGRAM_MESSAGES_NOTIFICATION)
-								states.change_waiting_response_state(False)
-
-							case FunctionsName.SEND_TELEGRAM_MESSAGES:
-								states.change_waiting_response_state(False)
-
-					case FunctionsName.VK_MESSAGES_TOPIC:
-						states.change_topic(FunctionsName.VK_MESSAGES_TOPIC)
-
-						match topic[FUNCTION]:
-							case None:
-								self.communication.waiting_select_action()
-								states.change_waiting_response_state(True)
-
-							case FunctionsName.SHOW_VK_MESSAGES:
-								self.notifications.viewing_messages(VK_MESSAGES_NOTIFICATION)
-								states.change_waiting_response_state(False)
-							
-							case FunctionsName.CLEAN_VK_MESSAGES:
-								self.notifications.clean_messages(VK_MESSAGES_NOTIFICATION)
-								states.change_waiting_response_state(False)
-
-							case FunctionsName.SEND_VK_MESSAGES:
-								states.change_waiting_response_state(False)
-
-					case FunctionsName.SOUND_TOPIC:
-						states.change_topic(FunctionsName.SOUND_TOPIC)
-						
-						match topic[FUNCTION]:
-							case None:
-								self.communication.waiting_select_action()
-								states.change_waiting_response_state(True)
-								
-							case FunctionsName.SOUND_MUTE:
-								states.change_mute_state(True)
-								states.change_waiting_response_state(False)
-							
-							case FunctionsName.SOUND_TURN_ON:
-								states.change_mute_state(False)
-								states.change_waiting_response_state(False)
-
-					case FunctionsName.CONTACTS_TOPIC:
-						states.change_topic(FunctionsName.CONTACTS_TOPIC)
-
-						match topic[FUNCTION]:
-							case None:
-								self.communication.waiting_select_action()
-								states.change_waiting_response_state(True)
-								
-							case FunctionsName.UPDATE_CONTACTS:
-								self.communication.update_contacts()
-								states.change_waiting_response_state(False)
-							
-							case FunctionsName.SHOW_CONTACTS:
-								states.change_waiting_response_state(False)
-
-							case FunctionsName.ADD_CONTACT:
-								states.change_waiting_response_state(False)
-
-							case FunctionsName.DELETE_CONTACT:
-								states.change_waiting_response_state(False)
-
-					case _:
-						self.communication.nothing_found()
+			return self.performing_functions.processing_topic(topic)
 
 		except Exception as e:
 			logger.error(e)
 
 
-	def check_topic_on_singleness(self, topic):
+	def check_topic_on_singleness(self, topic: str) -> bool:
 		'''
 			Проверка промежуточной темы на вложенность в нее функций
 		'''
@@ -151,7 +43,7 @@ class Handlers:
 			return False
 
 
-	def determinate_topic(self, command, intended_topic=None):
+	def determinate_topic(self, command: str, intended_topic=None) -> dict | None:
 		'''
 			Определение темы комманды, по словам комманды
 		'''
@@ -162,6 +54,7 @@ class Handlers:
 			if not intended_topic:
 				topics_list = TOPICS.keys()
 			else:
+				# добавление уже заранее подобранной темы запроса (при промежуточной результате распознавания речи)
 				topics_list = (intended_topic,)
 
 			for topic in topics_list:
@@ -170,8 +63,10 @@ class Handlers:
 
 				number_occurrences = []
 				for word in command.split():
+					# определение функций в команде
 					if word != '':
 						if type(TOPICS[topic][FUNCTIONS][0]) == tuple:
+							# проверка на вхожение слов команды во все кортежи возможных слов (которые являются обязательными)
 							for index, func in enumerate(TOPICS[topic][FUNCTIONS]):
 								if index not in number_occurrences and word in func:
 									number_occurrences.append(index)
@@ -184,6 +79,7 @@ class Handlers:
 					topics[topic][FUNCTIONS] = True
 
 				if topics[topic][FUNCTIONS] and TOPICS[topic][NESTED_FUNCTIONS]:
+					# определение действий и доп. слов в команде, если была выявлена функция и у этой темы ксть вложенные функции
 					topics[topic][NESTED_FUNCTIONS] = {}
 
 					for function in TOPICS[topic][NESTED_FUNCTIONS].keys():
@@ -205,6 +101,7 @@ class Handlers:
 
 				else:
 					if states.get_topic() == topic and TOPICS[topic][NESTED_FUNCTIONS]:
+						# обработка команды без функции, но по теме диалога
 						topics[topic][NESTED_FUNCTIONS] = {}
 						
 						for function in TOPICS[topic][NESTED_FUNCTIONS].keys():
@@ -221,6 +118,7 @@ class Handlers:
 							del topics[topic]
 
 					elif not topics[topic][FUNCTIONS]:
+						# удаление темы если в ней не была найдена функция
 						del topics[topic]
 
 			return self.processing_functions(topics)
@@ -230,7 +128,7 @@ class Handlers:
 			return None
 
 
-	def processing_functions(self, topics):
+	def processing_functions(self, topics: dict) -> dict | None:
 		'''
 			Обработка возможных функций темы и выявление наиболее подходящей
 		'''
@@ -242,11 +140,15 @@ class Handlers:
 			handler_topic = list_keys[0]
 
 			if len(topics) > 1 and not topics[handler_topic][FUNCTIONS]:
+				# если было получено несколько тем и при этом у первой темы не была определена функция
 				###
 				handler_topic = list_keys[1]
 
 			if topics[handler_topic][FUNCTIONS]:
+				# обработка темы у которой была выявлена функция
+
 				if NESTED_FUNCTIONS not in topics[handler_topic].keys() or not topics[handler_topic][NESTED_FUNCTIONS]:
+					# возвращение темы у которой нет вложенных функций
 					states.change_action_without_function_state(False)
 					return {
 						TOPIC: handler_topic,
@@ -255,6 +157,7 @@ class Handlers:
 
 				else:
 					if len(topics[handler_topic][NESTED_FUNCTIONS].keys()) == 1:
+						# возвращение темы у которой была выявлена только одна подходящая вложенная функция
 						states.change_action_without_function_state(False)
 						return {
 							TOPIC: handler_topic,
@@ -262,6 +165,7 @@ class Handlers:
 						}
 
 					else:
+						# определение наиболее подходящей вложенной функции из нескольких допустимых
 						###
 						result_function = {
 							NAME: None,
@@ -279,6 +183,7 @@ class Handlers:
 								result_function[NAME] = function
 
 						if result_function[NAME]:
+							# если определилась наиболее подходящая функция
 							states.change_action_without_function_state(False)
 							return {
 								TOPIC: handler_topic,
@@ -288,6 +193,7 @@ class Handlers:
 							return None
 
 			else:
+				# обработка темы без функции (действие для темы)
 				if not states.get_waiting_response_state():
 					# Если ассистент не ожидает ответа в виде какого-то действия, то не дожидаться конечного результата распознавания речи
 					states.change_action_without_function_state(True)
@@ -299,5 +205,4 @@ class Handlers:
 
 		except Exception as e:
 			logger.error(e)
-			print(topics)
 			return None

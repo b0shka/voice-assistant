@@ -7,15 +7,15 @@ class States:
 		self.SYNTHESIS_WORK = False # Статус работы синтеза речи, для предотвращения коолизий
 		self.WAITING_RESPONSE = False # Статус ожидания ответа на не полную команду
 		self.TOPIC = None # Текущая тема разговора
-		self.MUTE = False
-		self.CONTACTS = ()
+		self.MUTE = False # Состояние оповещения голосом о новых сообщениях
+		self.CONTACTS = () # Список контактов
 		self.WAITING_RESULT_RECOGNITION = True # Ожидание конечного результата распознавания голоса
 		self.ACTION_WITHOUT_FUNCTION = False # Статус вызова комманды с действие, но без функции, которое должно основываться на текущей теме разговора
 
 		self.NOTIFICATIONS = {
 			TELEGRAM_MESSAGES_NOTIFICATION: [],
 			VK_MESSAGES_NOTIFICATION: []
-		}
+		} # Уведомления которые будут накапливаться и которые можно просматривать и очищать
 
 
 	def get_synthesis_work_state(self):
