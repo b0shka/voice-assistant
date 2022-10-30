@@ -1,6 +1,7 @@
 import pyaudio
 from speechkit import DataStreamingRecognition
 from common.states import states
+from domain.RecognitionCommand import Command
 from utils.speech.config import session, FINITE, INTERMEDIATE
 
 
@@ -44,7 +45,7 @@ def gen_audio_capture_function():
 		p.terminate()
 
 
-def listen():
+def listen() -> Command:
 	count_equal_data = 0
 	previous_data = None
 
@@ -55,33 +56,21 @@ def listen():
 
 				if not states.get_waiting_result_recognition():
 					# если больше не нужно ожидать конечного результата распознавания речи
-					yield {
-						'text': None,
-						'mode': FINITE
-					}
+					yield Command(None, FINITE)
 					break
 
 				if text_command == previous_data:
 					count_equal_data += 1
 					if count_equal_data == 3:
 						# Если полученный текст повроляется уже 3-ий раз, то останавливать распознавание и возвращать текущий результат
-						yield {
-							'text': text_command,
-							'mode': FINITE
-						}
+						yield Command(text_command, FINITE)
 						count_equal_data = 0
 						previous_data = None
 						break
 				else:
 					if data[1]:
-						yield {
-							'text': text_command,
-							'mode': FINITE
-						}
+						yield Command(text_command, FINITE)
 					else:
-						yield {
-							'text': text_command,
-							'mode': INTERMEDIATE
-						}
+						yield Command(text_command, INTERMEDIATE)
 
 				previous_data = text_command

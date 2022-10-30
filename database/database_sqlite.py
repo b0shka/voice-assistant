@@ -2,6 +2,7 @@ import sqlite3
 from common.config import *
 from common.errors import *
 from database.tables import *
+from domain.Message import Message
 from utils.logging import logger
 
 
@@ -52,7 +53,7 @@ class DatabaseSQLite:
 							time DATETIME DEFAULT CURRENT_TIMESTAMP);""")
 
 			self.db.commit()
-			logger.info(f'Create table if not exists {TABLE_TELEGRAM_MESSAGES}, {TABLE_VK_MESSAGES}, {TABLE_YANDEX_MESSAGES} in database')
+			logger.info(f'Create table if not exists {TABLE_TELEGRAM_MESSAGES}, {TABLE_VK_MESSAGES}, {TABLE_CONTACTS}, {TABLE_REQUESTS_ANSWERS} in database')
 
 		except Exception as e:
 			logger.error(e)
@@ -67,37 +68,37 @@ class DatabaseSQLite:
 			return 0
 
 
-	def add_telegram_message(self, message, contact_id=None, from_id=None, first_name=None, last_name=None):
+	def add_telegram_message(self, message: Message):
 		try:
-			if contact_id:
-				self.sql.execute(f"INSERT INTO {TABLE_TELEGRAM_MESSAGES} (text, contact_id, first_name, last_name) VALUES (?, ?, ?, ?);", (message, contact_id, first_name, last_name))
+			if message.contact_id:
+				self.sql.execute(f"INSERT INTO {TABLE_TELEGRAM_MESSAGES} (text, contact_id, first_name, last_name) VALUES (?, ?, ?, ?);", (message.text, message.contact_id, message.first_name, message.last_name))
 			else:
-				self.sql.execute(f"INSERT INTO {TABLE_TELEGRAM_MESSAGES} (text, from_id, first_name, last_name) VALUES (?, ?, ?, ?);", (message, from_id, first_name, last_name))
+				self.sql.execute(f"INSERT INTO {TABLE_TELEGRAM_MESSAGES} (text, from_id, first_name, last_name) VALUES (?, ?, ?, ?);", (message.text, message.from_id, message.first_name, message.last_name))
 			self.db.commit()
 
-			if contact_id:
-				logger.info(f"Добавлено новое сообщение из Telegram от пользователя {first_name} {last_name}")
+			if message.contact_id:
+				logger.info(f"Добавлено новое сообщение из Telegram от контакта {message.contact_id}")
 			else:
-				logger.info(f"Добавлено новое сообщение из Telegram от пользователя {first_name} {last_name}")
+				logger.info(f"Добавлено новое сообщение из Telegram от пользователя {message.first_name} {message.last_name}")
 			return 1
 		except Exception as e:
 			logger.error(e)
 			return 0
 
 
-	def add_vk_message(self, message, contact_id=None, from_id=None, first_name=None, last_name=None):
+	def add_vk_message(self, message: Message):
 		try:
-			if contact_id:
-				self.sql.execute(f"INSERT INTO {TABLE_VK_MESSAGES} (text, contact_id, first_name, last_name) VALUES (?, ?, ?, ?);", (message, contact_id, first_name, last_name))
+			if message.contact_id:
+				self.sql.execute(f"INSERT INTO {TABLE_VK_MESSAGES} (text, contact_id, first_name, last_name) VALUES (?, ?, ?, ?);", (message.text, message.contact_id, message.first_name, message.last_name))
 			else:
-				self.sql.execute(f"INSERT INTO {TABLE_VK_MESSAGES} (text, from_id, first_name, last_name) VALUES (?, ?, ?, ?);", (message, from_id, first_name, last_name))
+				self.sql.execute(f"INSERT INTO {TABLE_VK_MESSAGES} (text, from_id, first_name, last_name) VALUES (?, ?, ?, ?);", (message.text, message.from_id, message.first_name, message.last_name))
 
 			self.db.commit()
 
-			if contact_id:
-				logger.info(f"Добавлено новое сообщение из VK от контакта {contact_id}")
+			if message.contact_id:
+				logger.info(f"Добавлено новое сообщение из VK от контакта {message.contact_id}")
 			else:
-				logger.info(f"Добавлено новое сообщение из VK от пользователя {first_name} {last_name}")
+				logger.info(f"Добавлено новое сообщение из VK от пользователя {message.first_name} {message.last_name}")
 			return 1
 		except Exception as e:
 			logger.error(e)
@@ -134,7 +135,7 @@ class DatabaseSQLite:
 			return 0
 
 
-	def delete_telegram_message_by_id(self, id):
+	def delete_telegram_message_by_id(self, id: int):
 		try:
 			self.sql.execute(f"DELETE FROM {TABLE_TELEGRAM_MESSAGES} WHERE id = {id};")
 
@@ -158,7 +159,7 @@ class DatabaseSQLite:
 			return 0
 
 
-	def delete_vk_message_by_id(self, id):
+	def delete_vk_message_by_id(self, id: int):
 		try:
 			self.sql.execute(f"DELETE FROM {TABLE_VK_MESSAGES} WHERE id = {id};")
 
@@ -170,7 +171,7 @@ class DatabaseSQLite:
 			return 0
 
 
-	def add_request_answer(self, text, type):
+	def add_request_answer(self, text: str, type: str):
 		try:
 			self.sql.execute(f"INSERT INTO {TABLE_REQUESTS_ANSWERS} (text, type) VALUES (?, ?);", (text, type))
 			self.db.commit()
@@ -179,7 +180,7 @@ class DatabaseSQLite:
 			last_requests_answers = self.get_requests_answers()
 			if len(last_requests_answers) > 10:
 				requests_answer = last_requests_answers[::-1]
-				result = self.delete_old_requests_answer(requests_answer[10:])
+				result = self.delete_requests_answer(requests_answer[10:])
 				if result == 0:
 					logger.error(ERROR_CLEAN_OLD_REQUESTS_ANSWERS)
 
@@ -199,7 +200,7 @@ class DatabaseSQLite:
 			return 0
 
 
-	def delete_old_requests_answer(self, requests_answers):
+	def delete_requests_answer(self, requests_answers):
 		try:
 			for i in requests_answers:
 				self.sql.execute(f"DELETE FROM {TABLE_REQUESTS_ANSWERS} WHERE id = {i[0]};")

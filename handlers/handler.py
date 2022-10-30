@@ -4,6 +4,7 @@ from common.states import states
 from handlers.topics import TOPICS
 from handlers.config import *
 from handlers.performing_functions import PerformingFunctions
+from domain.Topic import Topic
 
 
 class Handler:
@@ -12,7 +13,7 @@ class Handler:
 		self.performing_functions = PerformingFunctions()
 
 
-	def processing_command(self, command: str, default_topic=None, intended_topic=None):
+	def processing_command(self, command: str, default_topic: Topic | None = None, intended_topic: str | None = None):
 		'''
 			Выполение действия (функции) исходя из темы команды
 		'''
@@ -22,7 +23,6 @@ class Handler:
 				# если нет уже полученной темы (при получении промежуточных результатов распознавания речи), то определять ее "вручную"
 				topic = self.determinate_topic(command, intended_topic)
 
-			print(topic)
 			return self.performing_functions.processing_topic(topic)
 
 		except Exception as e:
@@ -43,21 +43,21 @@ class Handler:
 			return False
 
 
-	def determinate_topic(self, command: str, intended_topic=None) -> dict | None:
+	def determinate_topic(self, command: str, intended_topic: str | None = None) -> Topic | None:
 		'''
 			Определение темы комманды, по словам комманды
 		'''
 		try:
 			topics = {}
-			topics_list = None
+			input_topics = None
 
 			if not intended_topic:
-				topics_list = TOPICS.keys()
+				input_topics = TOPICS.keys()
 			else:
 				# добавление уже заранее подобранной темы запроса (при промежуточной результате распознавания речи)
-				topics_list = (intended_topic,)
+				input_topics = (intended_topic,)
 
-			for topic in topics_list:
+			for topic in input_topics:
 				if topic not in topics.keys():
 					topics[topic] = {FUNCTIONS: False}
 
@@ -128,7 +128,7 @@ class Handler:
 			return None
 
 
-	def processing_functions(self, topics: dict) -> dict | None:
+	def processing_functions(self, topics: dict) -> Topic | None:
 		'''
 			Обработка возможных функций темы и выявление наиболее подходящей
 		'''
@@ -150,19 +150,16 @@ class Handler:
 				if NESTED_FUNCTIONS not in topics[handler_topic].keys() or not topics[handler_topic][NESTED_FUNCTIONS]:
 					# возвращение темы у которой нет вложенных функций
 					states.change_action_without_function_state(False)
-					return {
-						TOPIC: handler_topic,
-						FUNCTION: None
-					}
+					return Topic(handler_topic, None)
 
 				else:
 					if len(topics[handler_topic][NESTED_FUNCTIONS].keys()) == 1:
 						# возвращение темы у которой была выявлена только одна подходящая вложенная функция
 						states.change_action_without_function_state(False)
-						return {
-							TOPIC: handler_topic,
-							FUNCTION: next(iter(topics[handler_topic][NESTED_FUNCTIONS]))
-						}
+						return Topic(
+							topic = handler_topic, 
+							functions = next(iter(topics[handler_topic][NESTED_FUNCTIONS]))
+						)
 
 					else:
 						# определение наиболее подходящей вложенной функции из нескольких допустимых
@@ -185,10 +182,10 @@ class Handler:
 						if result_function[NAME]:
 							# если определилась наиболее подходящая функция
 							states.change_action_without_function_state(False)
-							return {
-								TOPIC: handler_topic,
-								FUNCTION: result_function[NAME]
-							}
+							return Topic(
+								topic = handler_topic, 
+								functions = result_function[NAME]
+							)
 						else:
 							return None
 
@@ -198,10 +195,10 @@ class Handler:
 					# Если ассистент не ожидает ответа в виде какого-то действия, то не дожидаться конечного результата распознавания речи
 					states.change_action_without_function_state(True)
 
-				return {
-					TOPIC: handler_topic,
-					FUNCTION: next(iter(topics[handler_topic][NESTED_FUNCTIONS]))
-				}
+				return Topic(
+					topic = handler_topic, 
+					functions = next(iter(topics[handler_topic][NESTED_FUNCTIONS]))
+				)
 
 		except Exception as e:
 			logger.error(e)

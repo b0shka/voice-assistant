@@ -1,3 +1,4 @@
+from domain.Topic import Topic
 from utils.logging import logger
 from common.states import states
 from common.notifications import *
@@ -14,9 +15,14 @@ class PerformingFunctions:
 		self.communication = Communications()
 
 
-	def processing_topic(self, topic: dict):
+	def processing_topic(self, topic: Topic | None):
+		'''
+			Выполнение функции исходя из полученной темы и вложенной в нее функции (не всегда)
+		'''
 		try:
-			if states.get_waiting_response_state() and (not topic or topic[TOPIC] != states.get_topic()):
+			print(topic)
+
+			if states.get_waiting_response_state() and (not topic or topic.topic != states.get_topic()):
 				# если ассистент ожидает ответ, но полученная тема или функция темы не соответсвует ожидаемой
 				self.communication.action_not_found_in_topic()
 
@@ -26,14 +32,14 @@ class PerformingFunctions:
 
 			else:
 				# обработка полученной темы и вложенной функции
-				match topic[TOPIC]:
+				match topic.topic:
 					case FunctionsName.EXIT_TOPIC:
 						return self.communication.exit()
 
 					case FunctionsName.NOTIFICATIONS_TOPIC:
 						states.change_topic(FunctionsName.NOTIFICATIONS_TOPIC)
 						
-						match topic[FUNCTION]:
+						match topic.functions:
 							case None:
 								self.communication.waiting_select_action()
 								states.change_waiting_response_state(True)
@@ -49,7 +55,7 @@ class PerformingFunctions:
 					case FunctionsName.TELEGRAM_MESSAGES_TOPIC:
 						states.change_topic(FunctionsName.TELEGRAM_MESSAGES_TOPIC)
 
-						match topic[FUNCTION]:
+						match topic.functions:
 							case None:
 								self.communication.waiting_select_action()
 								states.change_waiting_response_state(True)
@@ -68,7 +74,7 @@ class PerformingFunctions:
 					case FunctionsName.VK_MESSAGES_TOPIC:
 						states.change_topic(FunctionsName.VK_MESSAGES_TOPIC)
 
-						match topic[FUNCTION]:
+						match topic.functions:
 							case None:
 								self.communication.waiting_select_action()
 								states.change_waiting_response_state(True)
@@ -87,7 +93,7 @@ class PerformingFunctions:
 					case FunctionsName.SOUND_TOPIC:
 						states.change_topic(FunctionsName.SOUND_TOPIC)
 						
-						match topic[FUNCTION]:
+						match topic.functions:
 							case None:
 								self.communication.waiting_select_action()
 								states.change_waiting_response_state(True)
@@ -103,7 +109,7 @@ class PerformingFunctions:
 					case FunctionsName.CONTACTS_TOPIC:
 						states.change_topic(FunctionsName.CONTACTS_TOPIC)
 
-						match topic[FUNCTION]:
+						match topic.functions:
 							case None:
 								self.communication.waiting_select_action()
 								states.change_waiting_response_state(True)

@@ -30,7 +30,7 @@ class VK:
 			logger.error(e)
 
 
-	def send_message(self, user_id, message):
+	def send_message(self, user_id: str, message: str):
 		try:
 			self.session.method(
 				"messages.send", 
@@ -45,7 +45,7 @@ class VK:
 			logger.error(e)
 
 
-	def get_user_data_by_id(self, user_id):
+	def get_user_data_by_id(self, user_id: str):
 		try:
 			user_data = self.session.method(
 				"users.get",

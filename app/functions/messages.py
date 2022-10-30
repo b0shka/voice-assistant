@@ -14,7 +14,7 @@ class Messages:
 		self.db = DatabaseSQLite()
 
 
-	def get_contact_by_from_id(self, id, service):
+	def get_contact_by_from_id(self, id: int, service: str):
 		try:
 			for contact in states.get_contacts():
 				if service == TELEGRAM_MESSAGES_NOTIFICATION:
@@ -31,7 +31,7 @@ class Messages:
 			return -1
 
 
-	def new_telegram_message(self, message):
+	def new_telegram_message(self, message: dict):
 		'''
 			Обработка полученного нового сообщения из Телеграм
 		'''
@@ -54,24 +54,22 @@ class Messages:
 							answer += f' {contact[2]}'
 						synthesis_text(answer)
 
-					states.change_notifications(
-						TELEGRAM_MESSAGES_NOTIFICATION, 
-						Message(
-							message = message['message'],
-							contact_id = contact[0],
-							first_name = contact[1],
-							last_name = contact[2]
-						)
-					)
-
-					result = self.db.add_telegram_message(
-						message = message['message'], 
+					new_message = Message(
+						text = message['message'],
 						contact_id = contact[0],
 						first_name = contact[1],
 						last_name = contact[2]
 					)
+
+					states.change_notifications(
+						TELEGRAM_MESSAGES_NOTIFICATION, 
+						new_message
+					)
+
+					result = self.db.add_telegram_message(new_message)
 					if result == 0:
 						logger.error(ERROR_ADD_TELEGRAM_MESSAGE)
+
 		except Exception as e:
 			logger.error(e)
 
@@ -87,37 +85,36 @@ class Messages:
 						logger.error(ERROR_GET_CONTACT_BY_VK_ID)
 
 					case 0:
-						match self.get_user_data_by_id(event.user_id):
-							case 0:
-								logger.error(FAILED_GET_USER_DATA_BY_ID)
-							case -1:
-								logger.error(ERROR_GET_USER_DATA_BY_ID)
+						pass
+						#match self.get_user_data_by_id(event.user_id):
+						#	case 0:
+						#		logger.error(FAILED_GET_USER_DATA_BY_ID)
+						#	case -1:
+						#		logger.error(ERROR_GET_USER_DATA_BY_ID)
 
-							case user if type(user) == dict:
-								print(user)
-								if not states.get_mute_state():
-									answer = f'У вас новое сообщение в Вконтакте от пользователя {user["first_name"]}'
-									if user["last_name"]:
-										answer += f' {user["last_name"]}'
-									synthesis_text(answer)
+						#	case user if type(user) == dict:
+						#		print(user)
+						#		if not states.get_mute_state():
+						#			answer = f'У вас новое сообщение в Вконтакте от пользователя {user["first_name"]}'
+						#			if user["last_name"]:
+						#				answer += f' {user["last_name"]}'
+						#			synthesis_text(answer)
 
-								states.change_notifications(
-									VK_MESSAGES_NOTIFICATION, 
-									Message(
-										message = event.text,
-										first_name = user['first_name'],
-										last_name = user['last_name']
-									)
-								)
+						#		new_message = Message(
+						#			text = event.text, 
+						#			from_id = event.user_id,
+						#			first_name = user['first_name'],
+						#			last_name = user['last_name']
+						#		)
 
-								result = self.db.add_vk_message(
-									message = event.text, 
-									from_id = event.user_id,
-									first_name = user['first_name'],
-									last_name = user['last_name']
-								)
-								if result == 0:
-									logger.error(ERROR_ADD_VK_MESSAGE)
+						#		states.change_notifications(
+						#			VK_MESSAGES_NOTIFICATION, 
+						#			new_message
+						#		)
+
+						#		result = self.db.add_vk_message(new_message)
+						#		if result == 0:
+						#			logger.error(ERROR_ADD_VK_MESSAGE)
 
 					case contact if type(contact) == tuple:
 						if not states.get_mute_state():
@@ -126,27 +123,24 @@ class Messages:
 								answer += f' {contact[2]}'
 							synthesis_text(answer)
 
-						states.change_notifications(
-							VK_MESSAGES_NOTIFICATION, 
-							Message(
-								message = event.text,
-								contact_id = contact[0],
-								first_name = contact[1],
-								last_name = contact[2]
-							)
-						)
-
-						result = self.db.add_vk_message(
-							message = event.text, 
+						new_message = Message(
+							text = event.text,
 							contact_id = contact[0],
 							first_name = contact[1],
 							last_name = contact[2]
 						)
+
+						states.change_notifications(
+							VK_MESSAGES_NOTIFICATION, 
+							new_message
+						)
+
+						result = self.db.add_vk_message(new_message)
 						if result == 0:
 							logger.error(ERROR_ADD_VK_MESSAGE)
 
 			elif event.from_chat:
-				print('новое сообщение из чата')
+				synthesis_text('У вас новое сообщение в беседе')
 
 		except Exception as e:
 			logger.error(e)

@@ -12,7 +12,7 @@ class Notifications:
 		self.db = DatabaseSQLite()
 
 
-	def get_contact_by_id(self, id):
+	def get_contact_by_id(self, id: int) -> int:
 		try:
 			if not id:
 				return 0
@@ -79,12 +79,13 @@ class Notifications:
 			logger.error(e)
 
 
-	def viewing_messages(self, service):
+	def viewing_messages(self, service: str):
 		try:
 			messages = states.get_notifications_by_type(service)
 
 			if len(messages):
 				for message in messages:
+					###
 					if message.first_name:
 						answer = ''
 
@@ -96,17 +97,17 @@ class Notifications:
 						if message.last_name:
 							answer += f' {message.last_name}'
 						
-						answer += f'. {message.message}'
+						answer += f'. {message.text}'
 						synthesis_text(answer)
 						
 					else:
 						match self.get_contact_by_id(message.contact_id):
 							case 0:
-								answer = f'Сообщение от неизвестного пользователя {message.first_name}'
+								answer = f'Сообщение от пользователя {message.first_name}'
 								if message.last_name:
 									answer += f' {message.last_name}'
 								
-								answer += f'. {message.message}'
+								answer += f'. {message.text}'
 								synthesis_text(answer)
 
 							case -1:
@@ -117,8 +118,9 @@ class Notifications:
 								if contact[2]:
 									answer += f' {contact[2]}'
 								
-								answer += f'. {message.message}'
+								answer += f'. {message.text}'
 								synthesis_text(answer)
+
 			else:
 				if service == TELEGRAM_MESSAGES_NOTIFICATION:
 					synthesis_text('У вас нет новых сообщений в Телеграм')
@@ -129,7 +131,7 @@ class Notifications:
 			logger.error(e)
 
 
-	def clean_messages(self, service):
+	def clean_messages(self, service: str):
 		try:
 			states.clean_notifications(service)
 			result = None

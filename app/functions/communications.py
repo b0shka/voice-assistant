@@ -12,7 +12,7 @@ class Communications:
 		self.db = DatabaseSQLite()
 
 
-	def exit(self):
+	def exit(self) -> int:
 		exit_answer = ('До скорой встречи', 'До свидания', 'Всего хорошего', 'Удачи', 'Всего доброго', 'Счастл+иво оставаться')
 		synthesis_text(choice(exit_answer))
 		return 0
