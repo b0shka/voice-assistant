@@ -83,21 +83,20 @@ class Assistant:
 			Начало прослушивания микрофона и выполнение комманд
 		'''
 		try:
-			intermediate_result = None
 			intended_topic = None
 
 			for command in listen():
 				time_now = datetime.datetime.now().time()
-				if command['mode'] == 'intermediate' and command['text'] != intermediate_result:
-					intermediate_result = command['text']
-					print(f'{time_now} [INTERMEDIATE] {intermediate_result}')
-					topic = self.handlers.determinate_topic(intermediate_result)
+				
+				if command['mode'] == 'intermediate':
+					print(f'{time_now} [INTERMEDIATE] {command["text"]}')
+					topic = self.handlers.determinate_topic(command['text'])
 
 					if topic and topic[TOPIC] and not states.get_action_without_function_state():
 						if topic[FUNCTION] or self.handlers.check_topic_on_singleness(topic[TOPIC]):
 							states.change_waiting_result_recognition(False)
 							status_exit = self.handlers.processing(
-								command = intermediate_result,
+								command = command['text'],
 								default_topic = topic
 							)
 							if status_exit == 0:

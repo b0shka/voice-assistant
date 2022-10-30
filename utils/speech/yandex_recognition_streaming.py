@@ -43,9 +43,14 @@ def gen_audio_capture_function():
 
 
 def listen():
+	count_equal_data = 0
+	previous_data = None
+
 	while True:
 		if not states.get_synthesis_work_state():
 			for data in data_streaming_recognition.recognize(gen_audio_capture_function):
+				text_command = data[0][0].lower()
+
 				if not states.get_waiting_result_recognition():
 					yield {
 						'text': None,
@@ -53,13 +58,27 @@ def listen():
 					}
 					break
 
-				if data[1]:
-					yield {
-						'text': data[0][0].lower(),
-						'mode': 'finite'
-					}
+				if text_command == previous_data:
+					count_equal_data += 1
+					if count_equal_data == 3:
+						# Если полученный текст повроляется уже 3-ий раз, то останавливать распознавание и возвращать текущий результат
+						yield {
+							'text': text_command,
+							'mode': 'finite'
+						}
+						count_equal_data = 0
+						previous_data = None
+						break
 				else:
-					yield {
-						'text': data[0][0].lower(),
-						'mode': 'intermediate'
-					}
+					if data[1]:
+						yield {
+							'text': text_command,
+							'mode': 'finite'
+						}
+					else:
+						yield {
+							'text': text_command,
+							'mode': 'intermediate'
+						}
+
+				previous_data = text_command

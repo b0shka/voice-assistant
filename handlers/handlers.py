@@ -172,7 +172,6 @@ class Handlers:
 				for word in command.split():
 					if word != '':
 						if type(TOPICS[topic][FUNCTIONS][0]) == tuple:
-							###
 							for index, func in enumerate(TOPICS[topic][FUNCTIONS]):
 								if index not in number_occurrences and word in func:
 									number_occurrences.append(index)
@@ -239,64 +238,66 @@ class Handlers:
 			if len(topics) == 0:
 				return None
 			
-			else:
-				list_keys = tuple(topics.keys())
-				handler_topic = list_keys[0]
+			list_keys = tuple(topics.keys())
+			handler_topic = list_keys[0]
 
-				if len(topics) > 1:
-					if not topics[handler_topic][FUNCTIONS]:
-						handler_topic = list_keys[1]
+			if len(topics) > 1 and not topics[handler_topic][FUNCTIONS]:
+				###
+				handler_topic = list_keys[1]
 
-				if topics[handler_topic][FUNCTIONS]:
-					if NESTED_FUNCTIONS not in topics[handler_topic].keys() or not topics[handler_topic][NESTED_FUNCTIONS]:
+			if topics[handler_topic][FUNCTIONS]:
+				if NESTED_FUNCTIONS not in topics[handler_topic].keys() or not topics[handler_topic][NESTED_FUNCTIONS]:
+					states.change_action_without_function_state(False)
+					return {
+						TOPIC: handler_topic,
+						FUNCTION: None
+					}
+
+				else:
+					if len(topics[handler_topic][NESTED_FUNCTIONS].keys()) == 1:
 						states.change_action_without_function_state(False)
 						return {
 							TOPIC: handler_topic,
-							FUNCTION: None
+							FUNCTION: next(iter(topics[handler_topic][NESTED_FUNCTIONS]))
 						}
 
 					else:
-						if len(topics[handler_topic][NESTED_FUNCTIONS].keys()) == 1:
+						###
+						result_function = {
+							NAME: None,
+							ACTIONS: 0,
+							ADDITIONALLY: 0
+						}
+
+						for function in topics[handler_topic][NESTED_FUNCTIONS].keys():
+							if topics[handler_topic][NESTED_FUNCTIONS][function][ACTIONS] > result_function[ACTIONS]:
+								result_function = topics[handler_topic][NESTED_FUNCTIONS][function]
+								result_function[NAME] = function
+
+							elif topics[handler_topic][NESTED_FUNCTIONS][function][ADDITIONALLY] > result_function[ADDITIONALLY]:
+								result_function = topics[handler_topic][NESTED_FUNCTIONS][function]
+								result_function[NAME] = function
+
+						if result_function[NAME]:
 							states.change_action_without_function_state(False)
 							return {
 								TOPIC: handler_topic,
-								FUNCTION: next(iter(topics[handler_topic][NESTED_FUNCTIONS]))
+								FUNCTION: result_function[NAME]
 							}
-
 						else:
-							result_function = {
-								NAME: None,
-								ACTIONS: 0,
-								ADDITIONALLY: 0
-							}
+							return None
 
-							for function in topics[handler_topic][NESTED_FUNCTIONS].keys():
-								if topics[handler_topic][NESTED_FUNCTIONS][function][ACTIONS] > result_function[ACTIONS]:
-									result_function = topics[handler_topic][NESTED_FUNCTIONS][function]
-									result_function[NAME] = function
+			else:
+				if not states.get_waiting_response_state():
+					# Если ассистент не ожидает ответа в виде какого-то действия, то не дожидаться конечного результата распознавания речи
+					states.change_action_without_function_state(True)
 
-								elif topics[handler_topic][NESTED_FUNCTIONS][function][ADDITIONALLY] > result_function[ADDITIONALLY]:
-									result_function = topics[handler_topic][NESTED_FUNCTIONS][function]
-									result_function[NAME] = function
-
-							if result_function[NAME]:
-								states.change_action_without_function_state(False)
-								return {
-									TOPIC: handler_topic,
-									FUNCTION: result_function[NAME]
-								}
-							else:
-								return None
-
-				else:
-					if not states.get_waiting_response_state():
-						states.change_action_without_function_state(True)
-	
-					return {
-						TOPIC: handler_topic,
-						FUNCTION: next(iter(topics[handler_topic][NESTED_FUNCTIONS]))
-					}
+				return {
+					TOPIC: handler_topic,
+					FUNCTION: next(iter(topics[handler_topic][NESTED_FUNCTIONS]))
+				}
 
 		except Exception as e:
 			logger.error(e)
+			print(topics)
 			return None
