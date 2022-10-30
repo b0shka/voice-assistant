@@ -28,74 +28,107 @@ class Handlers:
 				topic = self.determinate_topic(command, intended_topic)
 			print(topic)
 
-			if not topic:
+			if states.get_waiting_response_state() and (not topic or topic[TOPIC] != states.get_topic()):
+				self.communication.action_not_found_in_topic()
+
+			elif not topic:
 				self.communication.nothing_found()
 
 			else:
-				match topic['topic']:
+				match topic[TOPIC]:
 					case FunctionsName.EXIT_TOPIC:
 						return self.communication.exit()
 
 					case FunctionsName.NOTIFICATIONS_TOPIC:
-						match topic['function']:
+						states.change_topic(FunctionsName.NOTIFICATIONS_TOPIC)
+						
+						match topic[FUNCTION]:
 							case None:
 								self.communication.waiting_select_action()
 								states.change_waiting_response_state(True)
-								states.change_topic(FunctionsName.NOTIFICATIONS_TOPIC)
 
 							case FunctionsName.SHOW_NOTIFICATIONS:
 								self.notifications.viewing_notifications()
+								states.change_waiting_response_state(False)
 			
 							case FunctionsName.CLEAN_NOTIFICATIONS:
 								self.notifications.clean_notifications()
+								states.change_waiting_response_state(False)
 
 					case FunctionsName.TELEGRAM_MESSAGES_TOPIC:
-						match topic['function']:
+						states.change_topic(FunctionsName.TELEGRAM_MESSAGES_TOPIC)
+
+						match topic[FUNCTION]:
 							case None:
 								self.communication.waiting_select_action()
 								states.change_waiting_response_state(True)
-								states.change_topic(FunctionsName.TELEGRAM_MESSAGES_TOPIC)
 
 							case FunctionsName.SHOW_TELEGRAM_MESSAGES:
 								self.notifications.viewing_messages(TELEGRAM_MESSAGES_NOTIFICATION)
+								states.change_waiting_response_state(False)
 							
 							case FunctionsName.CLEAN_TELEGRAM_MESSAGES:
 								self.notifications.clean_messages(TELEGRAM_MESSAGES_NOTIFICATION)
+								states.change_waiting_response_state(False)
 
 							case FunctionsName.SEND_TELEGRAM_MESSAGES:
-								pass
+								states.change_waiting_response_state(False)
 
 					case FunctionsName.VK_MESSAGES_TOPIC:
-						match topic['function']:
+						states.change_topic(FunctionsName.VK_MESSAGES_TOPIC)
+
+						match topic[FUNCTION]:
 							case None:
 								self.communication.waiting_select_action()
 								states.change_waiting_response_state(True)
-								states.change_topic(FunctionsName.VK_MESSAGES_TOPIC)
 
 							case FunctionsName.SHOW_VK_MESSAGES:
 								self.notifications.viewing_messages(VK_MESSAGES_NOTIFICATION)
+								states.change_waiting_response_state(False)
 							
 							case FunctionsName.CLEAN_VK_MESSAGES:
 								self.notifications.clean_messages(VK_MESSAGES_NOTIFICATION)
+								states.change_waiting_response_state(False)
 
 							case FunctionsName.SEND_VK_MESSAGES:
-								pass
+								states.change_waiting_response_state(False)
 
 					case FunctionsName.SOUND_TOPIC:
-						match topic['function']:
+						states.change_topic(FunctionsName.SOUND_TOPIC)
+						
+						match topic[FUNCTION]:
 							case None:
 								self.communication.waiting_select_action()
 								states.change_waiting_response_state(True)
-								states.change_topic(FunctionsName.SOUND_TOPIC)
 								
 							case FunctionsName.SOUND_MUTE:
 								states.change_mute_state(True)
+								states.change_waiting_response_state(False)
 							
 							case FunctionsName.SOUND_TURN_ON:
 								states.change_mute_state(False)
+								states.change_waiting_response_state(False)
 
-					#case FunctionsName.UPDATE_CONTACTS:
-					#	self.communication.update_contacts()
+					case FunctionsName.CONTACTS_TOPIC:
+						states.change_topic(FunctionsName.CONTACTS_TOPIC)
+
+						match topic[FUNCTION]:
+							case None:
+								self.communication.waiting_select_action()
+								states.change_waiting_response_state(True)
+								
+							case FunctionsName.UPDATE_CONTACTS:
+								self.communication.update_contacts()
+								states.change_waiting_response_state(False)
+							
+							case FunctionsName.SHOW_CONTACTS:
+								states.change_waiting_response_state(False)
+
+							case FunctionsName.ADD_CONTACT:
+								states.change_waiting_response_state(False)
+
+							case FunctionsName.DELETE_CONTACT:
+								states.change_waiting_response_state(False)
 
 					case _:
 						self.communication.nothing_found()
@@ -124,12 +157,12 @@ class Handlers:
 		'''
 		try:
 			topics = {}
-			topics_list = []
+			topics_list = None
 
 			if not intended_topic:
 				topics_list = TOPICS.keys()
 			else:
-				topics_list = [intended_topic]
+				topics_list = (intended_topic,)
 
 			for topic in topics_list:
 				if topic not in topics.keys():
@@ -171,8 +204,25 @@ class Handlers:
 						not topics[topic][NESTED_FUNCTIONS][function][ADDITIONALLY]:
 							del topics[topic][NESTED_FUNCTIONS][function]
 
-				elif not topics[topic][FUNCTIONS]:
-					del topics[topic]
+				else:
+					if states.get_topic() == topic and TOPICS[topic][NESTED_FUNCTIONS]:
+						topics[topic][NESTED_FUNCTIONS] = {}
+						
+						for function in TOPICS[topic][NESTED_FUNCTIONS].keys():
+							topics[topic][NESTED_FUNCTIONS][function] = {ACTIONS: 0}
+
+							for word in command.split():
+								if word in TOPICS[topic][NESTED_FUNCTIONS][function][ACTIONS]:
+									topics[topic][NESTED_FUNCTIONS][function][ACTIONS] += 1
+
+							if not topics[topic][NESTED_FUNCTIONS][function][ACTIONS]:
+								del topics[topic][NESTED_FUNCTIONS][function]
+
+						if not topics[topic][NESTED_FUNCTIONS]:
+							del topics[topic]
+
+					elif not topics[topic][FUNCTIONS]:
+						del topics[topic]
 
 			return self.processing_functions(topics)
 
@@ -190,44 +240,62 @@ class Handlers:
 				return None
 			
 			else:
-				first_topic = next(iter(topics))
+				list_keys = tuple(topics.keys())
+				handler_topic = list_keys[0]
 
-				if NESTED_FUNCTIONS not in topics[first_topic].keys() or not topics[first_topic][NESTED_FUNCTIONS]:
-					return {
-						TOPIC: first_topic,
-						FUNCTION: None
-					}
+				if len(topics) > 1:
+					if not topics[handler_topic][FUNCTIONS]:
+						handler_topic = list_keys[1]
 
-				else:
-					if len(topics[first_topic][NESTED_FUNCTIONS].keys()) == 1:
+				if topics[handler_topic][FUNCTIONS]:
+					if NESTED_FUNCTIONS not in topics[handler_topic].keys() or not topics[handler_topic][NESTED_FUNCTIONS]:
+						states.change_action_without_function_state(False)
 						return {
-							TOPIC: first_topic,
-							FUNCTION: next(iter(topics[first_topic][NESTED_FUNCTIONS]))
+							TOPIC: handler_topic,
+							FUNCTION: None
 						}
 
 					else:
-						result_function = {
-							NAME: None,
-							ACTIONS: 0,
-							ADDITIONALLY: 0
-						}
-
-						for function in topics[first_topic][NESTED_FUNCTIONS].keys():
-							if topics[first_topic][NESTED_FUNCTIONS][function][ACTIONS] > result_function[ACTIONS]:
-								result_function = topics[first_topic][NESTED_FUNCTIONS][function]
-								result_function[NAME] = function
-
-							elif topics[first_topic][NESTED_FUNCTIONS][function][ADDITIONALLY] > result_function[ADDITIONALLY]:
-								result_function = topics[first_topic][NESTED_FUNCTIONS][function]
-								result_function[NAME] = function
-
-						if result_function[NAME]:
+						if len(topics[handler_topic][NESTED_FUNCTIONS].keys()) == 1:
+							states.change_action_without_function_state(False)
 							return {
-								TOPIC: first_topic,
-								FUNCTION: result_function[NAME]
+								TOPIC: handler_topic,
+								FUNCTION: next(iter(topics[handler_topic][NESTED_FUNCTIONS]))
 							}
+
 						else:
-							return None
+							result_function = {
+								NAME: None,
+								ACTIONS: 0,
+								ADDITIONALLY: 0
+							}
+
+							for function in topics[handler_topic][NESTED_FUNCTIONS].keys():
+								if topics[handler_topic][NESTED_FUNCTIONS][function][ACTIONS] > result_function[ACTIONS]:
+									result_function = topics[handler_topic][NESTED_FUNCTIONS][function]
+									result_function[NAME] = function
+
+								elif topics[handler_topic][NESTED_FUNCTIONS][function][ADDITIONALLY] > result_function[ADDITIONALLY]:
+									result_function = topics[handler_topic][NESTED_FUNCTIONS][function]
+									result_function[NAME] = function
+
+							if result_function[NAME]:
+								states.change_action_without_function_state(False)
+								return {
+									TOPIC: handler_topic,
+									FUNCTION: result_function[NAME]
+								}
+							else:
+								return None
+
+				else:
+					if not states.get_waiting_response_state():
+						states.change_action_without_function_state(True)
+	
+					return {
+						TOPIC: handler_topic,
+						FUNCTION: next(iter(topics[handler_topic][NESTED_FUNCTIONS]))
+					}
 
 		except Exception as e:
 			logger.error(e)

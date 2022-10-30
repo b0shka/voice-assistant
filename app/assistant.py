@@ -93,7 +93,7 @@ class Assistant:
 					print(f'{time_now} [INTERMEDIATE] {intermediate_result}')
 					topic = self.handlers.determinate_topic(intermediate_result)
 
-					if topic and topic[TOPIC]:
+					if topic and topic[TOPIC] and not states.get_action_without_function_state():
 						if topic[FUNCTION] or self.handlers.check_topic_on_singleness(topic[TOPIC]):
 							states.change_waiting_result_recognition(False)
 							status_exit = self.handlers.processing(

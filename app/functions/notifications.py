@@ -9,10 +9,7 @@ from database.database_sqlite import DatabaseSQLite
 class Notifications:
 
 	def __init__(self):
-		try:
-			self.db = DatabaseSQLite()
-		except Exception as e:
-			logger.error(e)
+		self.db = DatabaseSQLite()
 
 
 	def get_contact_by_id(self, id):

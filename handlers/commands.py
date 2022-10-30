@@ -1,10 +1,10 @@
 from handlers.config import *
-from handlers.functions_name import FunctionsName
 from handlers.possible_words.actions import *
 from handlers.possible_words.functions import *
 from handlers.possible_words.pronouns import *
 from handlers.possible_words.prepositions import *
 from handlers.possible_words.descriptions import *
+from handlers.functions_name import FunctionsName
 
 
 TOPICS = {
@@ -73,6 +73,28 @@ TOPICS = {
 			FunctionsName.SOUND_TURN_ON: {
 				ACTIONS: ENABLE,
 				ADDITIONALLY: WITH
+			}
+		}
+	},
+
+	FunctionsName.CONTACTS_TOPIC: {
+		FUNCTIONS: CONTACTS,
+		NESTED_FUNCTIONS: {
+			FunctionsName.UPDATE_CONTACTS: {
+				ACTIONS: UPDATE,
+				ADDITIONALLY: ()
+			},
+			FunctionsName.SHOW_CONTACTS: {
+				ACTIONS: SHOW + WATCH,
+				ADDITIONALLY: MY
+			},
+			FunctionsName.ADD_CONTACT: {
+				ACTIONS: ADD + CREATE,
+				ADDITIONALLY: ()
+			},
+			FunctionsName.DELETE_CONTACT: {
+				ACTIONS: REMOVE,
+				ADDITIONALLY: ()
 			}
 		}
 	}

@@ -4,12 +4,13 @@ from common.notifications import *
 class States:
 
 	def __init__(self):
-		self.SYNTHESIS_WORK = False
-		self.WAITING_RESPONSE = False
-		self.TOPIC = None
+		self.SYNTHESIS_WORK = False # Статус работы синтеза речи, для предотвращения коолизий
+		self.WAITING_RESPONSE = False # Статус ожидания ответа на не полную команду
+		self.TOPIC = None # Текущая тема разговора
 		self.MUTE = False
 		self.CONTACTS = ()
-		self.WAITING_RESULT_RECOGNITION = True
+		self.WAITING_RESULT_RECOGNITION = True # Ожидание конечного результата распознавания голоса
+		self.ACTION_WITHOUT_FUNCTION = False # Статус вызова комманды с действие, но без функции, которое должно основываться на текущей теме разговора
 
 		self.NOTIFICATIONS = {
 			TELEGRAM_MESSAGES_NOTIFICATION: [],
@@ -70,6 +71,13 @@ class States:
 
 	def change_waiting_result_recognition(self, status):
 		self.WAITING_RESULT_RECOGNITION = status
+
+
+	def get_action_without_function_state(self):
+		return self.ACTION_WITHOUT_FUNCTION
+
+	def change_action_without_function_state(self, state):
+		self.ACTION_WITHOUT_FUNCTION = state
 
 
 states = States()
