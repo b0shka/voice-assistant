@@ -18,11 +18,11 @@ class Messages:
 		try:
 			for contact in states.get_contacts():
 				if service == TELEGRAM_MESSAGES_NOTIFICATION:
-					if contact[4] == id:
+					if contact.telegram_id == id:
 						return contact
 				
 				elif service == VK_MESSAGES_NOTIFICATION:
-					if contact[5] == id:
+					if contact.vk_id == id:
 						return contact
 
 			return 0
@@ -56,9 +56,9 @@ class Messages:
 
 					new_message = Message(
 						text = message['message'],
-						contact_id = contact[0],
-						first_name = contact[1],
-						last_name = contact[2]
+						contact_id = contact.id,
+						first_name = contact.first_name,
+						last_name = contact.last_name
 					)
 
 					states.change_notifications(
@@ -125,9 +125,9 @@ class Messages:
 
 						new_message = Message(
 							text = event.text,
-							contact_id = contact[0],
-							first_name = contact[1],
-							last_name = contact[2]
+							contact_id = contact.id,
+							first_name = contact.first_name,
+							last_name = contact.last_name
 						)
 
 						states.change_notifications(

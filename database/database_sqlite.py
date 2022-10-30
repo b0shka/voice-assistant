@@ -59,7 +59,7 @@ class DatabaseSQLite:
 			logger.error(e)
 
 
-	def get_contacts(self):
+	def get_contacts(self) -> list | int:
 		try:
 			self.sql.execute(f"SELECT * FROM {TABLE_CONTACTS};")
 			return self.sql.fetchall()
@@ -68,7 +68,7 @@ class DatabaseSQLite:
 			return 0
 
 
-	def add_telegram_message(self, message: Message):
+	def add_telegram_message(self, message: Message) -> int:
 		try:
 			if message.contact_id:
 				self.sql.execute(f"INSERT INTO {TABLE_TELEGRAM_MESSAGES} (text, contact_id, first_name, last_name) VALUES (?, ?, ?, ?);", (message.text, message.contact_id, message.first_name, message.last_name))
@@ -86,7 +86,7 @@ class DatabaseSQLite:
 			return 0
 
 
-	def add_vk_message(self, message: Message):
+	def add_vk_message(self, message: Message) -> int:
 		try:
 			if message.contact_id:
 				self.sql.execute(f"INSERT INTO {TABLE_VK_MESSAGES} (text, contact_id, first_name, last_name) VALUES (?, ?, ?, ?);", (message.text, message.contact_id, message.first_name, message.last_name))

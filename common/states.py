@@ -1,4 +1,6 @@
+from typing import List
 from common.notifications import *
+from domain.Contact import Contact
 
 
 class States:
@@ -8,10 +10,11 @@ class States:
 		self.WAITING_RESPONSE = False # Статус ожидания ответа на не полную команду
 		self.TOPIC = None # Текущая тема разговора
 		self.MUTE = False # Состояние оповещения голосом о новых сообщениях
-		self.CONTACTS = () # Список контактов
+		self.CONTACTS: List[Contact] = [] # Список контактов
 		self.WAITING_RESULT_RECOGNITION = True # Ожидание конечного результата распознавания голоса
 		self.ACTION_WITHOUT_FUNCTION = False # Статус вызова комманды с действие, но без функции, которое должно основываться на текущей теме разговора
 
+		###
 		self.NOTIFICATIONS = {
 			TELEGRAM_MESSAGES_NOTIFICATION: [],
 			VK_MESSAGES_NOTIFICATION: []
@@ -62,7 +65,7 @@ class States:
 	def get_contacts(self):
 		return self.CONTACTS
 	
-	def update_contacts(self, contacts):
+	def update_contacts(self, contacts: List[Contact]):
 		self.CONTACTS = contacts
 
 

@@ -4,9 +4,9 @@ from common.states import states
 from common.errors import *
 from common.notifications import *
 from database.database_sqlite import DatabaseSQLite
+from domain.Contact import Contact
 from handlers.handler import Handler
 from utils.logging import logger
-#from utils.speech.vosk_recognition import listen
 from utils.speech.yandex_recognition_streaming import listen
 from utils.speech.config import FINITE, INTERMEDIATE
 from domain.Message import Message
@@ -35,7 +35,20 @@ class Assistant:
 			if contacts == 0:
 				logger.error(ERROR_GET_CONTACTS)
 
-			states.update_contacts(contacts)
+			converted_contacts = []
+			for contact in contacts:
+				convert_contact = Contact(
+					id = contact[0],
+					first_name = contact[1],
+					last_name = contact[2],
+					phone = contact[3],
+					telegram_id = contact[4],
+					vk_id = contact[5],
+					email = contact[6]
+				)
+				converted_contacts.append(convert_contact)
+
+			states.update_contacts(converted_contacts)
 		except Exception as e:
 			logger.error(e)
 
@@ -97,7 +110,7 @@ class Assistant:
 					if topic and topic.topic and not states.get_action_without_function_state():
 						# если была получена тема и в команде присутствует функция
 						if topic.functions or self.handler.check_topic_on_singleness(topic.topic):
-							# если была получена вложенная функция или у темы в принципе их нет
+							# если была определена вложенная функция или у темы в принципе их нет
 							states.change_waiting_result_recognition(False)
 							status_exit = self.handler.processing_command(
 								command = command.text,
