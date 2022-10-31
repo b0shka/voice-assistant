@@ -1,7 +1,7 @@
 import pyaudio
 from speechkit import DataStreamingRecognition
 from common.states import states
-from domain.RecognitionCommand import Command
+from domain.Command import Command
 from utils.speech.config import session, FINITE, INTERMEDIATE
 
 

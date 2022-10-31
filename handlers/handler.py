@@ -5,6 +5,7 @@ from handlers.topics import TOPICS
 from handlers.config import *
 from handlers.performing_functions import PerformingFunctions
 from domain.Topic import Topic
+from domain.Determinate import NestedFunction, DeterminateTopic, DeterminateTopics
 
 
 class Handler:
@@ -21,7 +22,8 @@ class Handler:
 			topic = default_topic
 			if not topic:
 				# если нет уже полученной темы (при получении промежуточных результатов распознавания речи), то определять ее "вручную"
-				topic = self.determinate_topic(command, intended_topic)
+				#topic = self.determinate_topic(command, intended_topic)
+				topic = self.new_determinate_topic(command, intended_topic)
 
 			return self.performing_functions.processing_topic(topic)
 
@@ -41,6 +43,29 @@ class Handler:
 		except Exception as e:
 			logger.error(e)
 			return False
+
+
+	def new_determinate_topic(self, command: str, intended_topic: str | None = None) -> Topic | None:
+		'''
+			Определение темы комманды, по словам комманды
+		'''
+		try:
+			topics = {}
+			input_topics = None
+
+			if not intended_topic:
+				input_topics = TOPICS.keys()
+			else:
+				# добавление уже заранее подобранной темы запроса (при промежуточной результате распознавания речи)
+				input_topics = (intended_topic,)
+
+			for topic in input_topics:
+				print(topic)
+				#if topic not in topics.topics.n
+				
+		except Exception as e:
+			logger.error(e)
+			return None
 
 
 	def determinate_topic(self, command: str, intended_topic: str | None = None) -> Topic | None:
@@ -133,6 +158,7 @@ class Handler:
 			Обработка возможных функций темы и выявление наиболее подходящей
 		'''
 		try:
+			print(topics)
 			if len(topics) == 0:
 				return None
 			

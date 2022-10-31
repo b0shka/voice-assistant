@@ -7,7 +7,7 @@ from database.database_sqlite import DatabaseSQLite
 from domain.Contact import Contact
 from handlers.handler import Handler
 from utils.logging import logger
-from utils.speech.yandex_recognition_streaming import listen
+#from utils.speech.yandex_recognition_streaming import listen
 from utils.speech.config import FINITE, INTERMEDIATE
 from domain.Message import Message
 
@@ -97,8 +97,15 @@ class Assistant:
 		'''
 		try:
 			intended_topic = None
+			command = input('Enter: ')
+			status_exit = self.handler.processing_command(
+				command = command
+			)
+			if status_exit == 0:
+				os._exit(1)
 
-			for command in listen():
+
+			'''for command in listen():
 				time_now = datetime.datetime.now().time()
 
 				if command.mode == INTERMEDIATE:
@@ -147,7 +154,7 @@ class Assistant:
 					#if answer:
 					#	result = self.db.add_request_answer(answer, 'answer')
 					#	if result == 0:
-					#		logger.error(ERROR_ADD_REQUEST_ANSWER)
+					#		logger.error(ERROR_ADD_REQUEST_ANSWER)'''
 
 
 		except Exception as e:
