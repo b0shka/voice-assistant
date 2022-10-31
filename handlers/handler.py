@@ -1,37 +1,31 @@
 from utils.logging import logger
 from common.states import states
+from domain.data_class.Topic import Topic
 from handlers.topics import TOPICS
 from handlers.config import *
 from handlers.performing_functions import PerformingFunctions
-from domain.data_class.Topic import Topic
 
 
-class Handler:
+class Handler(PerformingFunctions):
 
 	def __init__(self):
-		self.performing_functions = PerformingFunctions()
+		super().__init__()
 
 
-	def processing_command(self, command: str, default_topic: Topic | None = None, intended_topic: str | None = None):
-		'''
-			Выполение действия (функции) исходя из темы команды
-		'''
+	def processing_command(self, command: str, intended_topic: str | None = None):
+		'''Выполение действия (функции) исходя из темы команды'''
+
 		try:
-			topic = default_topic
-			if not topic:
-				# если нет уже полученной темы (при получении промежуточных результатов распознавания речи), то определять ее "вручную"
-				topic = self.determinate_topic(command, intended_topic)
-
-			return self.performing_functions.processing_topic(topic)
+			topic = self.determinate_topic(command, intended_topic)
+			return self.processing_topic(topic)
 
 		except Exception as e:
 			logger.error(e)
 
 
 	def check_topic_on_singleness(self, topic: str) -> bool:
-		'''
-			Проверка промежуточной темы на вложенность в нее функций
-		'''
+		'''Проверка промежуточной темы на вложенность в нее функций'''
+
 		try:
 			if not TOPICS[topic][NESTED_FUNCTIONS]:
 				return True
@@ -43,9 +37,8 @@ class Handler:
 
 
 	def determinate_topic(self, command: str, intended_topic: str | None = None) -> Topic:
-		'''
-			Определение темы комманды, по словам комманды
-		'''
+		'''Определение темы комманды, по словам комманды'''
+
 		try:
 			topics = {}
 			input_topics = None
@@ -64,7 +57,7 @@ class Handler:
 				for word in command.split():
 					# определение функций в команде
 					if word != '':
-						if type(TOPICS[topic][FUNCTIONS][0]) == tuple:
+						if isinstance(TOPICS[topic][FUNCTIONS][0], tuple):
 							# проверка на вхожение слов команды во все кортежи возможных слов (которые являются обязательными)
 							for index, func in enumerate(TOPICS[topic][FUNCTIONS]):
 								if index not in number_occurrences and word in func:
@@ -74,7 +67,7 @@ class Handler:
 								topics[topic][FUNCTIONS] = True
 								break
 
-				if type(TOPICS[topic][FUNCTIONS][0]) == tuple and len(number_occurrences) == len(TOPICS[topic][FUNCTIONS]):
+				if isinstance(TOPICS[topic][FUNCTIONS][0], tuple) and len(number_occurrences) == len(TOPICS[topic][FUNCTIONS]):
 					topics[topic][FUNCTIONS] = True
 
 				if topics[topic][FUNCTIONS] and TOPICS[topic][NESTED_FUNCTIONS]:
@@ -128,9 +121,8 @@ class Handler:
 
 
 	def processing_functions(self, topics: dict) -> Topic:
-		'''
-			Обработка возможных функций темы и выявление наиболее подходящей
-		'''
+		'''Обработка возможных функций темы и выявление наиболее подходящей'''
+
 		try:
 			if len(topics) == 0:
 				return Topic()

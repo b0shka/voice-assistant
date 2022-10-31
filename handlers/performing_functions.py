@@ -1,5 +1,6 @@
 from domain.data_class.Topic import Topic
 from domain.enum_class.Services import Services
+from domain.enum_class.ActionsAssistant import ActionsAssistant
 from utils.logging import logger
 from common.states import states
 from handlers.config import *
@@ -15,10 +16,10 @@ class PerformingFunctions:
 		self.communication = Communications()
 
 
-	def processing_topic(self, topic: Topic):
-		'''
-			Выполнение функции исходя из полученной темы и вложенной в нее функции (не всегда)
-		'''
+	def processing_topic(self, topic: Topic) -> None | ActionsAssistant:
+		'''Выполнение функции исходя из полученной темы и вложенной в нее функции (не всегда)
+'''
+
 		try:
 			print(topic)
 

@@ -1,10 +1,11 @@
 from common.config import *
-from domain.enum_class.Errors import *
 from common.states import states
+from domain.data_class.Contact import Contact
 from domain.data_class.Message import Message
+from domain.enum_class.Errors import Errors
 from domain.enum_class.Services import Services
-from utils.logging import logger
 from database.database_sqlite import DatabaseSQLite
+from utils.logging import logger
 from utils.speech.yandex_synthesis import synthesis_text
 
 
@@ -14,8 +15,13 @@ class Messages:
 		self.db = DatabaseSQLite()
 
 
-	def get_contact_by_from_id(self, id: int, service: Services):
+	def say_error(self, error: Errors) -> None:
+		synthesis_text(error.value)
+
+
+	def get_contact_by_from_id(self, id: int, service: Services) -> Contact | Errors | int:
 		try:
+			###
 			for contact in states.CONTACTS:
 				if service == Services.TELEGRAM:
 					if contact.telegram_id == id:
@@ -27,11 +33,16 @@ class Messages:
 
 			return 0
 		except Exception as e:
+			match service:
+				case Services.TELEGRAM:
+					return Errors.GET_CONTACT_BY_TELEGRAM_ID
+				case Services.VK:
+					return Errors.GET_CONTACT_BY_VK_ID
+
 			logger.error(e)
-			return -1
 
 
-	def new_telegram_message(self, message: dict):
+	def new_telegram_message(self, message: dict) -> None:
 		'''
 			Обработка полученного нового сообщения из Телеграм
 		'''
@@ -40,18 +51,18 @@ class Messages:
 			from_id = int(message['from_id']['user_id'])
 			
 			match self.get_contact_by_from_id(from_id, Services.TELEGRAM):
-				case -1:
-					logger.error(ERROR_GET_CONTACT_BY_TELEGRAM_ID)
+				case contact if isinstance(contact, Errors):
+					self.say_error(contact.value)
 
 				case 0:
 					pass 
 					# сообщение не от контакта или от канала/чата
 
-				case contact if type(contact) == tuple:
-					if not states.get_mute_state():
-						answer = f'У вас новое сообщение в Телеграм от контакта {contact[1]}'
-						if contact[2]:
-							answer += f' {contact[2]}'
+				case contact if isinstance(contact, Contact):
+					if not states.MUTE:
+						answer = f'У вас новое сообщение в Телеграм от контакта {contact.first_name}'
+						if contact.last_name:
+							answer += f' {contact.last_name}'
 						synthesis_text(answer)
 
 					new_message = Message(
@@ -62,11 +73,12 @@ class Messages:
 					)
 
 					states.NOTIFICATIONS.telegram_messages.append(new_message)
-					result = self.db.add_telegram_message(new_message)
-					if result == 0:
-						logger.error(ERROR_ADD_TELEGRAM_MESSAGE)
+					error = self.db.add_telegram_message(new_message)
+					if isinstance(error, Errors):
+						self.say_error(error)
 
 		except Exception as e:
+			self.say_error(Errors.NEW_TELEGRAM_MESSAGE)
 			logger.error(e)
 
 
@@ -77,8 +89,8 @@ class Messages:
 		try:
 			if event.from_user:
 				match self.get_contact_by_from_id(event.user_id, Services.VK):
-					case -1:
-						logger.error(ERROR_GET_CONTACT_BY_VK_ID)
+					case contact if isinstance(contact, Errors):
+						self.say_error(contact.value)
 
 					case 0:
 						pass
@@ -88,7 +100,7 @@ class Messages:
 						#	case -1:
 						#		logger.error(ERROR_GET_USER_DATA_BY_ID)
 
-						#	case user if type(user) == dict:
+						#	case user if isinstance(user, dict):
 						#		print(user)
 						#		if not states.get_mute_state():
 						#			answer = f'У вас новое сообщение в Вконтакте от пользователя {user["first_name"]}'
@@ -108,15 +120,15 @@ class Messages:
 						#			new_message
 						#		)
 
-						#		result = self.db.add_vk_message(new_message)
-						#		if result == 0:
-						#			logger.error(ERROR_ADD_VK_MESSAGE)
+						#		error = self.db.add_vk_message(new_message)
+						#		if isinstance(error, Errors):
+						#			self.say_error(error)
 
-					case contact if type(contact) == tuple:
-						if not states.get_mute_state():
-							answer = f'У вас новое сообщение в Вконтакте от контакта {contact[1]}'
-							if contact[2]:
-								answer += f' {contact[2]}'
+					case contact if isinstance(contact, Contact):
+						if not states.MUTE:
+							answer = f'У вас новое сообщение в Вконтакте от контакта {contact.first_name}'
+							if contact.last_name:
+								answer += f' {contact.last_name}'
 							synthesis_text(answer)
 
 						new_message = Message(
@@ -127,12 +139,13 @@ class Messages:
 						)
 
 						states.NOTIFICATIONS.vk_messages.append(new_message)
-						result = self.db.add_vk_message(new_message)
-						if result == 0:
-							logger.error(ERROR_ADD_VK_MESSAGE)
+						error = self.db.add_vk_message(new_message)
+						if isinstance(error, Errors):
+							self.say_error(error)
 
 			elif event.from_chat:
 				synthesis_text('У вас новое сообщение в беседе')
 
 		except Exception as e:
+			self.say_error(Errors.NEW_VK_MESSAGE)
 			logger.error(e)

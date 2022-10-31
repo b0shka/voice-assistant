@@ -2,6 +2,7 @@ from random import choice
 from common.states import states
 from domain.enum_class.Errors import Errors
 from domain.data_class.Contact import Contact
+from domain.enum_class.ActionsAssistant import ActionsAssistant
 from utils.logging import logger
 from utils.speech.yandex_synthesis import synthesis_text
 from database.database_sqlite import DatabaseSQLite
@@ -13,10 +14,10 @@ class Communications:
 		self.db = DatabaseSQLite()
 
 
-	def exit(self) -> int:
+	def exit(self) -> ActionsAssistant:
 		exit_answer = ('До скорой встречи', 'До свидания', 'Всего хорошего', 'Удачи', 'Всего доброго', 'Счастл+иво оставаться')
 		synthesis_text(choice(exit_answer))
-		return 0
+		return ActionsAssistant.EXIT
 
 
 	def nothing_found(self):
@@ -59,7 +60,7 @@ class Communications:
 
 			states.CONTACTS = convert_contact
 			synthesis_text('Контакты успешно обновлены')
-			
+
 		except Exception as e:
 			logger.error(e)
 			self.say_error(Errors.UPDATE_CONTACT)

@@ -10,29 +10,17 @@ class DatabaseSQLite:
 	
 	def __init__(self) -> None | Errors:
 		try:
-			self.db = sqlite3.connect(PATH_FILE_DB, check_same_thread=False)
-			self.sql = self.db.cursor()
+			self._conn = sqlite3.connect(PATH_FILE_DB, check_same_thread=False)
+			self._cursor = self._conn.cursor()
 
 			logger.info('База данных успешно подключена')
 		except Exception as e:
 			logger.error(e)
-			return Errors.CONNECT_DB
-
-
-	def connect_db(self) -> None | Errors:
-		try:
-			self.db = sqlite3.connect(PATH_FILE_DB, check_same_thread=False)
-			self.sql = self.db.cursor()
-
-			logger.info('База данных успешно подключена')
-		except Exception as e:
-			logger.error(e)
-			return Errors.CONNECT_DB
 
 
 	def create_tables(self) -> None | Errors:
 		try:
-			self.sql.execute(f"""
+			self._cursor.execute(f"""
 				CREATE TABLE IF NOT EXISTS `{TablesDB.TELEGRAM_MESSAGES.value}` (
 					id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 					text TEXT NOT NULL,
@@ -44,7 +32,7 @@ class DatabaseSQLite:
 				);
 			""")
 
-			self.sql.execute(f"""
+			self._cursor.execute(f"""
 				CREATE TABLE IF NOT EXISTS `{TablesDB.VK_MESSAGES.value}` (
 					id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 					text TEXT NOT NULL,
@@ -56,7 +44,7 @@ class DatabaseSQLite:
 				);
 			""")
 
-			self.sql.execute(f"""
+			self._cursor.execute(f"""
 				CREATE TABLE IF NOT EXISTS `{TablesDB.CONTACTS.value}` (
 					id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 					first_name VARCHAR(255) NOT NULL,
@@ -68,7 +56,7 @@ class DatabaseSQLite:
 				);
 			""")
 
-			self.db.commit()
+			self._conn.commit()
 			logger.info(f'Успешно созданы таблицы в БД если их не было')
 
 		except Exception as e:
@@ -78,8 +66,8 @@ class DatabaseSQLite:
 
 	def get_contacts(self) -> list | Errors:
 		try:
-			self.sql.execute(f"SELECT * FROM {TablesDB.CONTACTS.value};")
-			return self.sql.fetchall()
+			self._cursor.execute(f"SELECT * FROM {TablesDB.CONTACTS.value};")
+			return self._cursor.fetchall()
 		except Exception as e:
 			logger.error(e)
 			return Errors.GET_CONTACTS
@@ -88,7 +76,7 @@ class DatabaseSQLite:
 	def add_telegram_message(self, message: Message) -> None | Errors:
 		try:
 			if message.contact_id:
-				self.sql.execute(
+				self._cursor.execute(
 					f"""
 						INSERT INTO {TablesDB.TELEGRAM_MESSAGES.value} (
 							text, contact_id, first_name, last_name
@@ -97,7 +85,7 @@ class DatabaseSQLite:
 					(message.text, message.contact_id, message.first_name, message.last_name)
 				)
 			else:
-				self.sql.execute(
+				self._cursor.execute(
 					f"""
 						INSERT INTO {TablesDB.TELEGRAM_MESSAGES.value} (
 							text, from_id, first_name, last_name
@@ -106,7 +94,7 @@ class DatabaseSQLite:
 					(message.text, message.from_id, message.first_name, message.last_name)
 				)
 
-			self.db.commit()
+			self._conn.commit()
 
 			if message.contact_id:
 				logger.info(f"Добавлено новое сообщение из Телеграм от контакта {message.contact_id}")
@@ -121,7 +109,7 @@ class DatabaseSQLite:
 	def add_vk_message(self, message: Message) -> None | Errors:
 		try:
 			if message.contact_id:
-				self.sql.execute(
+				self._cursor.execute(
 					f"""
 						INSERT INTO {TablesDB.VK_MESSAGES.value} (
 							text, contact_id, first_name, last_name
@@ -130,7 +118,7 @@ class DatabaseSQLite:
 					(message.text, message.contact_id, message.first_name, message.last_name)
 				)
 			else:
-				self.sql.execute(
+				self._cursor.execute(
 					f"""
 						INSERT INTO {TablesDB.VK_MESSAGES.value} (
 							text, from_id, first_name, last_name
@@ -139,7 +127,7 @@ class DatabaseSQLite:
 					(message.text, message.from_id, message.first_name, message.last_name)
 				)
 
-			self.db.commit()
+			self._conn.commit()
 
 			if message.contact_id:
 				logger.info(f"Добавлено новое сообщение из ВКонтакте от контакта {message.contact_id}")
@@ -153,8 +141,8 @@ class DatabaseSQLite:
 
 	def get_telegram_messages(self) -> list | Errors:
 		try:
-			self.sql.execute(f"SELECT * FROM {TablesDB.TELEGRAM_MESSAGES.value};")
-			return self.sql.fetchall()
+			self._cursor.execute(f"SELECT * FROM {TablesDB.TELEGRAM_MESSAGES.value};")
+			return self._cursor.fetchall()
 		except Exception as e:
 			logger.error(e)
 			return Errors.GET_TELEGRAM_MESSAGES
@@ -162,8 +150,8 @@ class DatabaseSQLite:
 
 	def get_vk_messages(self) -> list | Errors:
 		try:
-			self.sql.execute(f"SELECT * FROM {TablesDB.VK_MESSAGES.value};")
-			return self.sql.fetchall()
+			self._cursor.execute(f"SELECT * FROM {TablesDB.VK_MESSAGES.value};")
+			return self._cursor.fetchall()
 		except Exception as e:
 			logger.error(e)
 			return Errors.GET_VK_MESSAGES
@@ -171,9 +159,9 @@ class DatabaseSQLite:
 
 	def delete_telegram_messages(self) -> None | Errors:
 		try:
-			self.sql.execute(f"DELETE FROM {TablesDB.TELEGRAM_MESSAGES.value};")
+			self._cursor.execute(f"DELETE FROM {TablesDB.TELEGRAM_MESSAGES.value};")
 
-			self.db.commit()
+			self._conn.commit()
 			logger.info("Удалены все сообщения из Телеграм")
 		except Exception as e:
 			logger.error(e)
@@ -182,9 +170,9 @@ class DatabaseSQLite:
 
 	def delete_telegram_message_by_id(self, id: int) -> None | Errors:
 		try:
-			self.sql.execute(f"DELETE FROM {TablesDB.TELEGRAM_MESSAGES.value} WHERE id = {id};")
+			self._cursor.execute(f"DELETE FROM {TablesDB.TELEGRAM_MESSAGES.value} WHERE id = {id};")
 
-			self.db.commit()
+			self._conn.commit()
 			logger.info(f"Удалено сообщение из Телеграм по id: {id}")
 		except Exception as e:
 			logger.error(e)
@@ -193,9 +181,9 @@ class DatabaseSQLite:
 
 	def delete_vk_messages(self) -> None | Errors:
 		try:
-			self.sql.execute(f"DELETE FROM {TablesDB.VK_MESSAGES.value};")
+			self._cursor.execute(f"DELETE FROM {TablesDB.VK_MESSAGES.value};")
 
-			self.db.commit()
+			self._conn.commit()
 			logger.info("Удалены все сообщения из ВКонтакте")
 		except Exception as e:
 			logger.error(e)
@@ -204,9 +192,9 @@ class DatabaseSQLite:
 
 	def delete_vk_message_by_id(self, id: int) -> None | Errors:
 		try:
-			self.sql.execute(f"DELETE FROM {TablesDB.VK_MESSAGES.value} WHERE id = {id};")
+			self._cursor.execute(f"DELETE FROM {TablesDB.VK_MESSAGES.value} WHERE id = {id};")
 
-			self.db.commit()
+			self._conn.commit()
 			logger.info(f"Удалено новое сообщение из ВКонтакте по id: {id}")
 		except Exception as e:
 			logger.error(e)
