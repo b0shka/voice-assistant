@@ -1,6 +1,6 @@
 from utils.logging import logger
 from common.states import states
-from common.errors import *
+from domain.enum_class.Errors import *
 from utils.speech.yandex_synthesis import synthesis_text
 from database.database_sqlite import DatabaseSQLite
 from domain.data_class.Contact import Contact

@@ -1,7 +1,7 @@
 import os
 import datetime
 from common.states import states
-from common.errors import *
+from domain.enum_class.Errors import *
 from database.database_sqlite import DatabaseSQLite
 from domain.data_class.Contact import Contact
 from domain.data_class.Message import Message
@@ -16,6 +16,9 @@ class Assistant:
 	def __init__(self):
 		try:
 			self.db = DatabaseSQLite()
+			if error:
+				pass # say error
+
 			self.handler = Handler()
 			
 			self.db.create_tables()
@@ -138,15 +141,6 @@ class Assistant:
 							)
 							if status_exit == 0:
 								os._exit(1)
-
-					#result = self.db.add_request_answer(command.text], 'request')
-					#if not result:
-					#	logger.error(ERROR_ADD_REQUEST_ANSWER)
-
-					#if answer:
-					#	result = self.db.add_request_answer(answer, 'answer')
-					#	if result == 0:
-					#		logger.error(ERROR_ADD_REQUEST_ANSWER)
 
 		except Exception as e:
 			logger.error(e)

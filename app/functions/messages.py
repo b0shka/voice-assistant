@@ -1,5 +1,5 @@
 from common.config import *
-from common.errors import *
+from domain.enum_class.Errors import *
 from common.states import states
 from domain.data_class.Message import Message
 from domain.enum_class.Services import Services

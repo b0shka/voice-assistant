@@ -1,6 +1,6 @@
 from random import choice
-from common.errors import *
 from common.states import states
+from domain.enum_class.Errors import Errors
 from domain.data_class.Contact import Contact
 from utils.logging import logger
 from utils.speech.yandex_synthesis import synthesis_text
@@ -24,6 +24,10 @@ class Communications:
 		synthesis_text(choice(not_found_answer))
 
 
+	def say_error(self, error: Errors):
+		synthesis_text(error.value)
+
+
 	def waiting_select_action(self):
 		synthesis_text('Какое действие вы хотите выполнить?')
 
@@ -37,8 +41,8 @@ class Communications:
 		try:
 			###
 			contacts = self.db.get_contacts()
-			if contacts == 0:
-				logger.error(ERROR_GET_CONTACTS)
+			if isinstance(contacts, Errors):
+				self.say_error(contact.value)
 
 			converted_contacts = []
 			for contact in contacts:
@@ -55,10 +59,7 @@ class Communications:
 
 			states.CONTACTS = convert_contact
 			synthesis_text('Контакты успешно обновлены')
+			
 		except Exception as e:
 			logger.error(e)
-			synthesis_text('Ошибка при обновлении контактов')
-
-	
-	def error(self):
-		synthesis_text('Произошла ошибка')
+			self.say_error(Errors.UPDATE_CONTACT)

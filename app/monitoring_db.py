@@ -1,6 +1,6 @@
 import time
 from utils.logging import logger
-from common.errors import *
+from domain.enum_class.Errors import *
 from database.database_sqlite import DatabaseSQLite
 from utils.speech.yandex_synthesis import synthesis_text
 
