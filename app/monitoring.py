@@ -8,11 +8,8 @@ from services.telegram.telegram import Telegram
 class Monitoring:
 
 	def __init__(self):
-		try:
-			self.vk = VK()
-			self.telegram = Telegram()
-		except Exception as e:
-			logger.error(e)
+		self.vk = VK()
+		self.telegram = Telegram()
 
 
 	def start(self):

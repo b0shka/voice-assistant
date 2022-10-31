@@ -4,95 +4,97 @@ from handlers.possible_words.functions import *
 from handlers.possible_words.pronouns import *
 from handlers.possible_words.prepositions import *
 from handlers.possible_words.descriptions import *
-from handlers.functions_name import FunctionsName
+from handlers.functions_names import TopicsNames, FunctionsNames
 
+
+#HIGH_PRIORITY_TOPICS = (FunctionsNames.EXIT_TOPIC)
 
 TOPICS = {
-	FunctionsName.EXIT_TOPIC: {
+	TopicsNames.EXIT_TOPIC: {
 		FUNCTIONS: EXIT,
 		NESTED_FUNCTIONS: None
 	},
 	
-	FunctionsName.NOTIFICATIONS_TOPIC: {
+	TopicsNames.NOTIFICATIONS_TOPIC: {
 		FUNCTIONS: NOTIFICATIONS,
 		NESTED_FUNCTIONS: {
-			FunctionsName.SHOW_NOTIFICATIONS: {
+			FunctionsNames.SHOW_NOTIFICATIONS: {
 				ACTIONS: SHOW + WATCH,
 				ADDITIONALLY: MY
 			},
-			FunctionsName.CLEAN_NOTIFICATIONS: {
+			FunctionsNames.CLEAN_NOTIFICATIONS: {
 				ACTIONS: REMOVE,
 				ADDITIONALLY: ()
 			}
 		}
 	},
 
-	FunctionsName.TELEGRAM_MESSAGES_TOPIC: {
+	TopicsNames.TELEGRAM_MESSAGES_TOPIC: {
 		FUNCTIONS: (MESSAGES, TELEGRAM),
 		NESTED_FUNCTIONS: {
-			FunctionsName.SHOW_TELEGRAM_MESSAGES: {
+			FunctionsNames.SHOW_TELEGRAM_MESSAGES: {
 				ACTIONS: SHOW + WATCH,
 				ADDITIONALLY: MY
 			},
-			FunctionsName.CLEAN_TELEGRAM_MESSAGES: {
+			FunctionsNames.CLEAN_TELEGRAM_MESSAGES: {
 				ACTIONS: REMOVE,
 				ADDITIONALLY: ()
 			},
-			FunctionsName.SEND_TELEGRAM_MESSAGES: {
+			FunctionsNames.SEND_TELEGRAM_MESSAGES: {
 				ACTIONS: SEND + WRITE + CREATE,
 				ADDITIONALLY: ()
 			}
 		}
 	},
 
-	FunctionsName.VK_MESSAGES_TOPIC: {
+	TopicsNames.VK_MESSAGES_TOPIC: {
 		FUNCTIONS: (MESSAGES, VK),
 		NESTED_FUNCTIONS: {
-			FunctionsName.SHOW_VK_MESSAGES: {
+			FunctionsNames.SHOW_VK_MESSAGES: {
 				ACTIONS: SHOW + WATCH,
 				ADDITIONALLY: MY
 			},
-			FunctionsName.CLEAN_VK_MESSAGES: {
+			FunctionsNames.CLEAN_VK_MESSAGES: {
 				ACTIONS: REMOVE,
 				ADDITIONALLY: ()
 			},
-			FunctionsName.SEND_VK_MESSAGES: {
+			FunctionsNames.SEND_VK_MESSAGES: {
 				ACTIONS: SEND + WRITE + CREATE,
 				ADDITIONALLY: ()
 			}
 		}
 	},
 
-	FunctionsName.SOUND_TOPIC: {
+	TopicsNames.SOUND_TOPIC: {
 		FUNCTIONS: SOUND,
 		NESTED_FUNCTIONS: {
-			FunctionsName.SOUND_MUTE: {
+			FunctionsNames.SOUND_MUTE: {
 				ACTIONS: DISABLE,
 				ADDITIONALLY: WITHOUT
 			},
-			FunctionsName.SOUND_TURN_ON: {
+			FunctionsNames.SOUND_TURN_ON: {
 				ACTIONS: ENABLE,
 				ADDITIONALLY: WITH
 			}
 		}
 	},
 
-	FunctionsName.CONTACTS_TOPIC: {
+	TopicsNames.CONTACTS_TOPIC: {
 		FUNCTIONS: CONTACTS,
 		NESTED_FUNCTIONS: {
-			FunctionsName.UPDATE_CONTACTS: {
+			FunctionsNames.UPDATE_CONTACTS: {
 				ACTIONS: UPDATE,
 				ADDITIONALLY: ()
 			},
-			FunctionsName.SHOW_CONTACTS: {
+			FunctionsNames.SHOW_CONTACTS: {
 				ACTIONS: SHOW + WATCH,
 				ADDITIONALLY: MY
 			},
-			FunctionsName.ADD_CONTACT: {
+			FunctionsNames.ADD_CONTACT: {
 				ACTIONS: ADD + CREATE,
 				ADDITIONALLY: ()
 			},
-			FunctionsName.DELETE_CONTACT: {
+			FunctionsNames.DELETE_CONTACT: {
 				ACTIONS: REMOVE,
 				ADDITIONALLY: ()
 			}

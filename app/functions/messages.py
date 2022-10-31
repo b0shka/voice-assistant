@@ -1,8 +1,8 @@
 from common.config import *
 from common.errors import *
-from common.notifications import *
 from common.states import states
-from domain.Message import Message
+from domain.data_class.Message import Message
+from domain.enum_class.Services import Services
 from utils.logging import logger
 from database.database_sqlite import DatabaseSQLite
 from utils.speech.yandex_synthesis import synthesis_text
@@ -14,14 +14,14 @@ class Messages:
 		self.db = DatabaseSQLite()
 
 
-	def get_contact_by_from_id(self, id: int, service: str):
+	def get_contact_by_from_id(self, id: int, service: Services):
 		try:
-			for contact in states.get_contacts():
-				if service == TELEGRAM_MESSAGES_NOTIFICATION:
+			for contact in states.CONTACTS:
+				if service == Services.TELEGRAM:
 					if contact.telegram_id == id:
 						return contact
 				
-				elif service == VK_MESSAGES_NOTIFICATION:
+				elif service == Services.VK:
 					if contact.vk_id == id:
 						return contact
 
@@ -39,7 +39,7 @@ class Messages:
 			# тут будет ошибка, если сообщение отправлено не от человека, а от канала или чата
 			from_id = int(message['from_id']['user_id'])
 			
-			match self.get_contact_by_from_id(from_id, TELEGRAM_MESSAGES_NOTIFICATION):
+			match self.get_contact_by_from_id(from_id, Services.TELEGRAM):
 				case -1:
 					logger.error(ERROR_GET_CONTACT_BY_TELEGRAM_ID)
 
@@ -61,11 +61,7 @@ class Messages:
 						last_name = contact.last_name
 					)
 
-					states.change_notifications(
-						TELEGRAM_MESSAGES_NOTIFICATION, 
-						new_message
-					)
-
+					states.NOTIFICATIONS.telegram_messages.append(new_message)
 					result = self.db.add_telegram_message(new_message)
 					if result == 0:
 						logger.error(ERROR_ADD_TELEGRAM_MESSAGE)
@@ -80,7 +76,7 @@ class Messages:
 		'''
 		try:
 			if event.from_user:
-				match self.get_contact_by_from_id(event.user_id, VK_MESSAGES_NOTIFICATION):
+				match self.get_contact_by_from_id(event.user_id, Services.VK):
 					case -1:
 						logger.error(ERROR_GET_CONTACT_BY_VK_ID)
 
@@ -130,11 +126,7 @@ class Messages:
 							last_name = contact.last_name
 						)
 
-						states.change_notifications(
-							VK_MESSAGES_NOTIFICATION, 
-							new_message
-						)
-
+						states.NOTIFICATIONS.vk_messages.append(new_message)
 						result = self.db.add_vk_message(new_message)
 						if result == 0:
 							logger.error(ERROR_ADD_VK_MESSAGE)

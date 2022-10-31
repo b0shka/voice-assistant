@@ -2,7 +2,7 @@ import sqlite3
 from common.config import *
 from common.errors import *
 from database.tables import *
-from domain.Message import Message
+from domain.data_class.Message import Message
 from utils.logging import logger
 
 

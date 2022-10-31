@@ -1,8 +1,7 @@
-from dataclasses import dataclass
+from typing import NamedTuple
 
 
-@dataclass
-class Message:
+class Message(NamedTuple):
 	text: str
 	contact_id: int | None = None
 	from_id: int | None = None

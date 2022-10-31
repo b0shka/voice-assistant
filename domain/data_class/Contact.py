@@ -1,8 +1,6 @@
-from dataclasses import dataclass
+from typing import NamedTuple
 
-
-@dataclass
-class Contact:
+class Contact(NamedTuple):
 	id: int
 	first_name: str
 	last_name: str | None
