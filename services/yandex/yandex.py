@@ -4,7 +4,7 @@ from utils.logging import logger
 
 class Yandex:
 
-	def __init__(self):
+	def __init__(self) -> None:
 		try:
 			pass
 		except Exception as e:

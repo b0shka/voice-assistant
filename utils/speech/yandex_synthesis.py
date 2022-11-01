@@ -16,7 +16,7 @@ speed = 1.0
 format = 'lpcm'
 
 
-def synthesis_audio_bytes(audio_data):
+def synthesis_audio_bytes(audio_data) -> None:
 	try:
 		p = pyaudio.PyAudio()
 		stream = p.open(
@@ -34,7 +34,7 @@ def synthesis_audio_bytes(audio_data):
 		p.terminate()
 
 
-def synthesis_text(text: str):
+def synthesis_text(text: str) -> None:
 	# пока происходит параллельный синтез речи, ничего не делать
 	while states.SYNTHESIS_WORK: pass
 	states.SYNTHESIS_WORK = True

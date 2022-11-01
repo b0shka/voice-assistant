@@ -13,6 +13,7 @@ class TopicsNames(Enum):
 class FunctionsNames(Enum):
 	SHOW_NOTIFICATIONS = 'show_notifications'
 	CLEAN_NOTIFICATIONS = 'clean_notifications'
+	UPDATE_NOTIFICATIONS = 'update_notifications'
 
 	SHOW_TELEGRAM_MESSAGES = 'show_telegram_messages'
 	CLEAN_TELEGRAM_MESSAGES = 'clean_telegram_messages'

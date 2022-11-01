@@ -7,12 +7,12 @@ from services.telegram.telegram import Telegram
 
 class Monitoring:
 
-	def __init__(self):
+	def __init__(self) -> None:
 		self.vk = VK()
 		self.telegram = Telegram()
 
 
-	def start(self):
+	def start(self) -> None:
 		'''Начало мониторинга сторонних сервисов (Телеграм, ВКонтакте)'''
 		try:
 			check_vk = threading.Thread(target=self.vk.check_new_messages)

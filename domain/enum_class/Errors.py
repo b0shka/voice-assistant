@@ -14,6 +14,7 @@ class Errors(Enum):
 	PROCESSING_TOPIC = 'Ошибка при обработке полученной темы и вызове функции'
 
 	# Notifications
+	UPDATE_NOTIFICATIONS = 'Ошибка при обновлении уведомлений'
 	VIEWING_NOTIFICATIONS = 'Ошибка при просмотре уведомлений'
 	CLEAN_NOTIFICATIONS = 'Ошибка при очищении уведомлений'
 	VIEWING_MESSAGES = 'Ошибка при просмотре соощений'
@@ -26,6 +27,7 @@ class Errors(Enum):
 	NOT_FOUND_CONTACT_BY_BY = 'Не удалось найти контакт по id'
 	GET_CONTACT_BY_TELEGRAM_ID = 'Ошибка при получении контакта по telegram_id'
 	GET_CONTACT_BY_VK_ID = 'Ошибка при получении контакта по vk_id'
+	NOT_FOUND_CONTACT_BY_FROM_ID = 'Не удалось найти контакт по его идентификатору в сервисе'
 
 	# Telegram
 	ADD_TELEGRAM_MESSAGE = 'Ошибка при добавлении сообщения из Телеграм в базу данных'
@@ -49,3 +51,6 @@ class Errors(Enum):
 	SEND_VK_MESSAGE = 'Ошибка при отправке сообщения в ВКонтакте'
 	GET_USER_DATA_VK_BY_ID = 'Ошибка при получении информации об аккаунте в ВКонтакте'
 	FAILED_GET_USER_DATA_VK_BY_ID = 'Не удалось получить информации об аккаунте в ВКонтакте'
+
+	# Other
+	START_LISTEN = 'Ошибка при прослушивании комманд'

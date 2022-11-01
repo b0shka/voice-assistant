@@ -8,13 +8,15 @@ from handlers.config import *
 from handlers.functions_names import TopicsNames, FunctionsNames
 from app.functions.notifications import Notifications
 from app.functions.communications import Communications
+from app.functions.settings import Settings
 
 
 class PerformingFunctions:
 	
-	def __init__(self):
+	def __init__(self) -> None:
 		self.notifications = Notifications()
 		self.communication = Communications()
+		self.settings = Settings()
 
 
 	def processing_topic(self, topic: Topic) -> None | ActionsAssistant | Errors:
@@ -58,6 +60,9 @@ class PerformingFunctions:
 			
 							case FunctionsNames.CLEAN_NOTIFICATIONS:
 								self.notifications.clean_notifications()
+
+							case FunctionsNames.UPDATE_NOTIFICATIONS:
+								self.settings.update_notifications()
 
 					case TopicsNames.TELEGRAM_MESSAGES_TOPIC:
 						match topic.functions:
@@ -104,7 +109,7 @@ class PerformingFunctions:
 								self.communication.waiting_select_action()
 								
 							case FunctionsNames.UPDATE_CONTACTS:
-								self.communication.update_contacts()
+								self.settings.update_contacts()
 							
 							case FunctionsNames.SHOW_CONTACTS:
 								pass

@@ -7,7 +7,7 @@ from app.functions.messages import Messages
 
 class Telegram:
 
-	def __init__(self):
+	def __init__(self) -> None:
 		try:
 			self.messages = Messages()
 			self.client = TelegramClient(
@@ -22,7 +22,7 @@ class Telegram:
 			logger.error(e)
 
 
-	async def check_new_messages(self):
+	async def check_new_messages(self) -> None:
 		try:
 			logger.info('Началась проверка на новые сообщения в Телеграм')
 

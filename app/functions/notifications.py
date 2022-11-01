@@ -9,8 +9,12 @@ from domain.enum_class.Services import Services
 
 class Notifications:
 
-	def __init__(self):
+	def __init__(self) -> None:
 		self.db = DatabaseSQLite()
+
+
+	def say_error(self, error: Errors) -> None:
+		synthesis_text(error.value)
 
 
 	def get_contact_by_contact_id(self, id: int) -> Contact | Errors:
@@ -25,7 +29,7 @@ class Notifications:
 			return Errors.GET_CONTACT_BY_CONTACT_ID
 
 
-	def viewing_notifications(self):
+	def viewing_notifications(self) -> None:
 		try:
 			empty_notifications = True
 
@@ -54,31 +58,31 @@ class Notifications:
 				synthesis_text('У вас пока нет уведомлений')
 
 		except Exception as e:
-			synthesis_text(Errors.VIEWING_NOTIFICATIONS.value)
+			self.say_error(Errors.VIEWING_NOTIFICATIONS)
 			logger.error(e)
 
 
-	def clean_notifications(self):
+	def clean_notifications(self) -> None:
 		try:
 			states.NOTIFICATIONS.telegram_messages.clear()
 			states.NOTIFICATIONS.vk_messages.clear()
 
 			error = self.db.delete_telegram_messages()
 			if isinstance(error, Errors):
-				synthesis_text(error.value)
+				self.say_error(error)
 
 			error = self.db.delete_vk_messages()
 			if isinstance(error, Errors):
-				synthesis_text(error.value)
+				self.say_error(error)
 
 			synthesis_text('Уведомления очищены')
 
 		except Exception as e:
-			synthesis_text(Errors.CLEAN_NOTIFICATIONS.value)
+			self.say_error(Errors.CLEAN_NOTIFICATIONS)
 			logger.error(e)
 
 
-	def viewing_messages(self, service: Services):
+	def viewing_messages(self, service: Services) -> None:
 		try:
 			match service:
 				case Services.TELEGRAM:
@@ -103,6 +107,9 @@ class Notifications:
 						contact = self.get_contact_by_contact_id(message.contact_id)
 						
 						match contact:
+							case Errors.GET_CONTACT_BY_CONTACT_ID:
+								self.say_error(contact)
+								
 							case Errors.NOT_FOUND_CONTACT_BY_BY:
 								answer = f'Сообщение от неизвестного контакта {message.first_name}'
 								if message.last_name:
@@ -110,9 +117,6 @@ class Notifications:
 								
 								answer += f'. {message.text}'
 								synthesis_text(answer)
-
-							case Errors.GET_CONTACT_BY_CONTACT_ID:
-								synthesis_text(contact.value)
 
 							case contact if isinstance(contact, Contact):
 								answer = f'Сообщение от контакта {contact.first_name}'
@@ -133,17 +137,17 @@ class Notifications:
 						synthesis_text('У вас нет новых сообщений в Вконтакте')
 
 		except Exception as e:
-			synthesis_text(Errors.VIEWING_MESSAGES.value)
+			self.say_error(Errors.VIEWING_MESSAGES)
 			logger.error(e)
 
 
-	def clean_messages(self, service: Services):
+	def clean_messages(self, service: Services) -> None:
 		try:
 			match service:
 				case Services.TELEGRAM:
 					error = self.db.delete_telegram_messages()
 					if isinstance(error, Errors):
-						synthesis_text(error.value)
+						self.say_error(error)
 					else:
 						states.NOTIFICATIONS.telegram_messages.clear()
 						synthesis_text('Новые сообщения в Телеграм очищены')
@@ -151,11 +155,11 @@ class Notifications:
 				case Services.VK:
 					error = self.db.delete_vk_messages()
 					if isinstance(error, Errors):
-						synthesis_text(error.value)
+						self.say_error(error)
 					else:
 						states.NOTIFICATIONS.vk_messages.clear()
 						synthesis_text('Новые сообщения в Вконтакте очищены')
 
 		except Exception as e:
-			synthesis_text(Errors.CLEAN_MESSAGES.value)
+			self.say_error(Errors.CLEAN_MESSAGES)
 			logger.error(e)

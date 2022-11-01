@@ -8,7 +8,7 @@ from app.functions.messages import Messages
 
 class VK:
 
-	def __init__(self):
+	def __init__(self) -> None:
 		try:
 			self.messages = Messages()
 			self.session = vk_api.VkApi(token=VK_TOKEN)
@@ -20,7 +20,7 @@ class VK:
 			logger.error(e)
 
 
-	def check_new_messages(self):
+	def check_new_messages(self) -> None:
 		try:
 			logger.info('Началась проверка на новые сообщения в ВКонтакте')
 

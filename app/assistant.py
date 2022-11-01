@@ -1,8 +1,6 @@
 import os
 import datetime
 from common.states import states
-from domain.data_class.Contact import Contact
-from domain.data_class.Message import Message
 from domain.enum_class.Errors import Errors
 from domain.enum_class.CommandMode import CommandMode
 from domain.enum_class.ActionsAssistant import ActionsAssistant
@@ -10,92 +8,30 @@ from handlers.handler import Handler
 from database.database_sqlite import DatabaseSQLite
 from utils.logging import logger
 from utils.speech.yandex_recognition_streaming import listen
+from app.functions.settings import Settings
 
 
 class Assistant:
 
-	def __init__(self):
+	def __init__(self) -> None:
 		try:
 			self.db = DatabaseSQLite()
 			self.handler = Handler()
+			self.settings = Settings()
 			
 			error = self.db.create_tables()
 			if isinstance(error, Errors):
-				pass # say error
+				###
+				self.settings.say_error(error)
 
-			self.completion_contacts()
-			self.completion_notifications()
-		except Exception as e:
-			logger.error(e)
-
-
-	def completion_contacts(self):
-		'''Добавление контактов в глобальное состояние'''
-
-		try:
-			###
-			contacts = self.db.get_contacts()
-			if isinstance(contacts, Errors):
-				logger.error(contacts.value)
-
-			converted_contacts = []
-			for contact in contacts:
-				convert_contact = Contact(
-					id = contact[0],
-					first_name = contact[1],
-					last_name = contact[2],
-					phone = contact[3],
-					telegram_id = contact[4],
-					vk_id = contact[5],
-					email = contact[6]
-				)
-				converted_contacts.append(convert_contact)
-
-			states.CONTACTS = convert_contact
+			self.settings.update_contacts(isLauch=True)
+			self.settings.update_notifications(isLauch=True)
 
 		except Exception as e:
 			logger.error(e)
-			# say error
-
-	
-	def completion_notifications(self):
-		'''Добавление уведомлений (если такие существуют) в глобальное состояние'''
-
-		try:
-			telegram_messages = self.db.get_telegram_messages()
-			if isinstance(telegram_messages, Errors):
-				pass # say error
-			else:
-				for message in telegram_messages:
-					states.NOTIFICATIONS.telegram_messages.append(
-						self.get_message_object(message)
-					)
-
-			vk_messages = self.db.get_vk_messages()
-			if isinstance(vk_messages, Errors):
-				pass # say error
-			else:
-				for message in vk_messages:
-					states.NOTIFICATIONS.vk_messages.append(
-						self.get_message_object(message)
-					)
-				
-		except Exception as e:
-			logger.error(e)
-			# say error
-
-	
-	def get_message_object(self, message: list) -> Message:
-		return Message(
-			text = message[1],
-			contact_id = message[2],
-			from_id = message[3],
-			first_name = message[4],
-			last_name = message[5]
-		)
 
 
-	def start(self):
+	def start(self) -> None:
 		'''Начало прослушивания микрофона и выполнение комманд'''
 
 		try:
@@ -114,20 +50,20 @@ class Assistant:
 						# если была получена тема и в команде присутствует функция
 						error = self.handler.check_nested_functions(topic.topic)
 
-						if topic.functions or isinstance(error, bool):
+						if topic.functions or (isinstance(error, bool) and error):
 							# если была определена вложенная функция или у темы в принципе их нет
 							states.WAITING_RESULT_RECOGNITION = False
 
 							# если уже получена тема, то сразу вызывать обработку темы и выполнение функции
 							action_assistant = self.handler.processing_topic(topic)
-							match self.handler.processing_topic(topic):
+							match action_assistant:
 								case ActionsAssistant.EXIT:
 									os._exit(1)
 								case error if isinstance(error, Errors):
-									pass # say error
+									self.settings.say_error(error)
 
 						elif isinstance(error, Errors):
-							pass # say error
+							self.settings.say_error(error)
 
 						else:
 							intended_topic = topic.topic
@@ -151,8 +87,8 @@ class Assistant:
 								case ActionsAssistant.EXIT:
 									os._exit(1)
 								case error if isinstance(error, Errors):
-									pass # say error
+									self.settings.say_error(error)
 
 		except Exception as e:
+			self.settings.say_error(Errors.START_LISTEN)
 			logger.error(e)
-			# say error

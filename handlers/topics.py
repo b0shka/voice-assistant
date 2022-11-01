@@ -25,6 +25,10 @@ TOPICS = {
 			FunctionsNames.CLEAN_NOTIFICATIONS: {
 				ACTIONS: REMOVE,
 				ADDITIONALLY: ()
+			},
+			FunctionsNames.UPDATE_NOTIFICATIONS: {
+				ACTIONS: UPDATE,
+				ADDITIONALLY: ()
 			}
 		}
 	},
@@ -82,13 +86,13 @@ TOPICS = {
 	TopicsNames.CONTACTS_TOPIC: {
 		FUNCTIONS: CONTACTS,
 		NESTED_FUNCTIONS: {
-			FunctionsNames.UPDATE_CONTACTS: {
-				ACTIONS: UPDATE,
-				ADDITIONALLY: ()
-			},
 			FunctionsNames.SHOW_CONTACTS: {
 				ACTIONS: SHOW + WATCH,
 				ADDITIONALLY: MY
+			},
+			FunctionsNames.UPDATE_CONTACTS: {
+				ACTIONS: UPDATE,
+				ADDITIONALLY: ()
 			},
 			FunctionsNames.ADD_CONTACT: {
 				ACTIONS: ADD + CREATE,

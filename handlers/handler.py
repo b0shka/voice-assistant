@@ -10,7 +10,7 @@ from handlers.performing_functions import PerformingFunctions
 
 class Handler(PerformingFunctions):
 
-	def __init__(self):
+	def __init__(self) -> None:
 		super().__init__()
 
 
