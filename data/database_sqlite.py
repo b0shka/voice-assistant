@@ -2,7 +2,7 @@ import sqlite3
 from common.config import *
 from domain.enum_class.Errors import Errors
 from domain.enum_class.Tables import TablesDB
-from domain.data_class.Message import Message
+from domain.named_tuple.Message import Message
 from utils.logging import logger
 
 

@@ -1,18 +1,21 @@
 import threading
-from app.assistant import Assistant
-from app.monitoring import Monitoring
+from domain.enum_class.Errors import Errors
+from app.assistant import start_listen
+#from app.monitoring import Monitoring
+from app.functions.communications import say_error
 from utils.logging import logger
 
 
 def main():
 	try:
-		assistant = Assistant()
-		monitoring = Monitoring()
-		monitoring_thread = threading.Thread(target=monitoring.start)
+		#monitoring = Monitoring()
+		#monitoring_thread = threading.Thread(target=monitoring.start)
 
-		monitoring_thread.start()
-		assistant.start()
+		#monitoring_thread.start()
+		start_listen()
+
 	except Exception as e:
+		say_error(Errors.UNDEFIND)
 		logger.error(e)
 
 

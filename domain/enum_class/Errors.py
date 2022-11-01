@@ -7,27 +7,13 @@ class Errors(Enum):
 	CONNECT_DB = 'Ошибка при подключении в базе данных'
 	CREATE_TABLES = 'Ошибка при создании таблиц в базе данных'
 
-	# Handler
-	DETERMINATE_TOPIC = 'Ошибка при определении темы команды'
-	PROCESSING_FUNCTIONS = 'Ошибка при обработке вложенных функций темы'
-	CHECK_NESTED_FUNCTIONS = 'Ошибка при проверки на существование вложенных функций в теме'
-	PROCESSING_TOPIC = 'Ошибка при обработке полученной темы и вызове функции'
-
 	# Notifications
-	UPDATE_NOTIFICATIONS = 'Ошибка при обновлении уведомлений'
-	VIEWING_NOTIFICATIONS = 'Ошибка при просмотре уведомлений'
-	CLEAN_NOTIFICATIONS = 'Ошибка при очищении уведомлений'
-	VIEWING_MESSAGES = 'Ошибка при просмотре соощений'
-	CLEAN_MESSAGES = 'Ошибка при просмотре сообщений'
+	CONVERT_MESSAGE = 'Ошибка при конвертировании сообщения'
 	
 	# Contacts
 	GET_CONTACTS = 'Ошибка при получении контактов из базы данных'
-	UPDATE_CONTACT = 'Ошибка при обновлении контактов'
-	GET_CONTACT_BY_CONTACT_ID = 'Ошибка при получении контакта по contact_id'
+	CONVERT_CONTACT = 'Ошибка при конвертировании списка контактов'
 	NOT_FOUND_CONTACT_BY_BY = 'Не удалось найти контакт по id'
-	GET_CONTACT_BY_TELEGRAM_ID = 'Ошибка при получении контакта по telegram_id'
-	GET_CONTACT_BY_VK_ID = 'Ошибка при получении контакта по vk_id'
-	NOT_FOUND_CONTACT_BY_FROM_ID = 'Не удалось найти контакт по его идентификатору в сервисе'
 
 	# Telegram
 	ADD_TELEGRAM_MESSAGE = 'Ошибка при добавлении сообщения из Телеграм в базу данных'
@@ -53,4 +39,4 @@ class Errors(Enum):
 	FAILED_GET_USER_DATA_VK_BY_ID = 'Не удалось получить информации об аккаунте в ВКонтакте'
 
 	# Other
-	START_LISTEN = 'Ошибка при прослушивании комманд'
+	UNDEFIND = "Произошла неизвестная ошибка"

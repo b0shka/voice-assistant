@@ -1,10 +1,11 @@
-from handlers.config import *
-from handlers.possible_words.actions import *
-from handlers.possible_words.functions import *
-from handlers.possible_words.pronouns import *
-from handlers.possible_words.prepositions import *
-from handlers.possible_words.descriptions import *
-from handlers.functions_names import TopicsNames, FunctionsNames
+from app.handlers.config import *
+from app.handlers.possible_words.actions import *
+from app.handlers.possible_words.functions import *
+from app.handlers.possible_words.pronouns import *
+from app.handlers.possible_words.prepositions import *
+from app.handlers.possible_words.descriptions import *
+from domain.enum_class.TopicsNames import TopicsNames
+from domain.enum_class.FunctionsNames import FunctionsNames
 
 
 #HIGH_PRIORITY_TOPICS = (FunctionsNames.EXIT_TOPIC)

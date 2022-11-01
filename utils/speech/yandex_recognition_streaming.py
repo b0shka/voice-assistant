@@ -1,6 +1,6 @@
 import pyaudio
 from common.states import states
-from domain.data_class.Command import Command
+from domain.named_tuple.Command import Command
 from domain.enum_class.CommandMode import CommandMode
 from speechkit import DataStreamingRecognition
 from utils.speech.config import session

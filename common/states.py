@@ -1,7 +1,7 @@
 from typing import List
 from dataclasses import field
-from domain.data_class.Topic import Topic
-from domain.data_class.Contact import Contact
+from domain.named_tuple.Topic import Topic
+from domain.named_tuple.Contact import Contact
 from domain.data_class.Notifications import Notifications
 
 

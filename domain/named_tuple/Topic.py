@@ -1,5 +1,6 @@
 from typing import NamedTuple
-from handlers.functions_names import TopicsNames, FunctionsNames
+from domain.enum_class.TopicsNames import TopicsNames
+from domain.enum_class.FunctionsNames import FunctionsNames
 
 
 class Topic(NamedTuple):
