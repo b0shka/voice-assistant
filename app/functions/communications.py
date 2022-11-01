@@ -25,10 +25,6 @@ class Communications:
 		synthesis_text(choice(not_found_answer))
 
 
-	def say_error(self, error: Errors):
-		synthesis_text(error.value)
-
-
 	def waiting_select_action(self):
 		synthesis_text('Какое действие вы хотите выполнить?')
 
@@ -43,7 +39,7 @@ class Communications:
 			###
 			contacts = self.db.get_contacts()
 			if isinstance(contacts, Errors):
-				self.say_error(contact.value)
+				synthesis_text(contact.value)
 
 			converted_contacts = []
 			for contact in contacts:
@@ -62,5 +58,5 @@ class Communications:
 			synthesis_text('Контакты успешно обновлены')
 
 		except Exception as e:
+			synthesis_text(Errors.UPDATE_CONTACT.value)
 			logger.error(e)
-			self.say_error(Errors.UPDATE_CONTACT)

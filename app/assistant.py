@@ -113,13 +113,18 @@ class Assistant:
 					if topic and topic.topic and not states.ACTION_WITHOUT_FUNCTION:
 						# если была получена тема и в команде присутствует функция
 						error = self.handler.check_nested_functions(topic.topic)
+
 						if topic.functions or isinstance(error, bool):
 							# если была определена вложенная функция или у темы в принципе их нет
 							states.WAITING_RESULT_RECOGNITION = False
-							status_exit = self.handler.processing_topic(topic)
+
 							# если уже получена тема, то сразу вызывать обработку темы и выполнение функции
-							if status_exit == ActionsAssistant.EXIT:
-								os._exit(1)
+							action_assistant = self.handler.processing_topic(topic)
+							match self.handler.processing_topic(topic):
+								case ActionsAssistant.EXIT:
+									os._exit(1)
+								case error if isinstance(error, Errors):
+									pass # say error
 
 						elif isinstance(error, Errors):
 							pass # say error
@@ -138,12 +143,15 @@ class Assistant:
 						print(f'{time_now} [RESULT] {command.text}')
 
 						if command.text:
-							status_exit = self.handler.processing_command(
+							action_assistant = self.handler.processing_command(
 								command = command.text,
 								intended_topic = intended_topic
 							)
-							if status_exit == ActionsAssistant.EXIT:
-								os._exit(1)
+							match action_assistant:
+								case ActionsAssistant.EXIT:
+									os._exit(1)
+								case error if isinstance(error, Errors):
+									pass # say error
 
 		except Exception as e:
 			logger.error(e)

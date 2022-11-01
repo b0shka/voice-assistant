@@ -11,6 +11,7 @@ class Errors(Enum):
 	DETERMINATE_TOPIC = 'Ошибка при определении темы команды'
 	PROCESSING_FUNCTIONS = 'Ошибка при обработке вложенных функций темы'
 	CHECK_NESTED_FUNCTIONS = 'Ошибка при проверки на существование вложенных функций в теме'
+	PROCESSING_TOPIC = 'Ошибка при обработке полученной темы и вызове функции'
 
 	# Notifications
 	VIEWING_NOTIFICATIONS = 'Ошибка при просмотре уведомлений'
@@ -22,6 +23,7 @@ class Errors(Enum):
 	GET_CONTACTS = 'Ошибка при получении контактов из базы данных'
 	UPDATE_CONTACT = 'Ошибка при обновлении контактов'
 	GET_CONTACT_BY_CONTACT_ID = 'Ошибка при получении контакта по contact_id'
+	NOT_FOUND_CONTACT_BY_BY = 'Не удалось найти контакт по id'
 	GET_CONTACT_BY_TELEGRAM_ID = 'Ошибка при получении контакта по telegram_id'
 	GET_CONTACT_BY_VK_ID = 'Ошибка при получении контакта по vk_id'
 

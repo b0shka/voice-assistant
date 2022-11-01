@@ -15,10 +15,6 @@ class Messages:
 		self.db = DatabaseSQLite()
 
 
-	def say_error(self, error: Errors) -> None:
-		synthesis_text(error.value)
-
-
 	def get_contact_by_from_id(self, id: int, service: Services) -> Contact | Errors | int:
 		try:
 			###
@@ -43,20 +39,19 @@ class Messages:
 
 
 	def new_telegram_message(self, message: dict) -> None:
-		'''
-			Обработка полученного нового сообщения из Телеграм
-		'''
+		'''Обработка полученного нового сообщения из Телеграм'''
+
 		try:
 			# тут будет ошибка, если сообщение отправлено не от человека, а от канала или чата
 			from_id = int(message['from_id']['user_id'])
 			
 			match self.get_contact_by_from_id(from_id, Services.TELEGRAM):
-				case contact if isinstance(contact, Errors):
-					self.say_error(contact.value)
-
 				case 0:
 					pass 
 					# сообщение не от контакта или от канала/чата
+
+				case error if isinstance(error, Errors):
+					synthesis_text(error.value)
 
 				case contact if isinstance(contact, Contact):
 					if not states.MUTE:
@@ -75,28 +70,24 @@ class Messages:
 					states.NOTIFICATIONS.telegram_messages.append(new_message)
 					error = self.db.add_telegram_message(new_message)
 					if isinstance(error, Errors):
-						self.say_error(error)
+						synthesis_text(error.value)
 
 		except Exception as e:
-			self.say_error(Errors.PROCESSING_NEW_TELEGRAM_MESSAGE)
+			synthesis_text(Errors.PROCESSING_NEW_TELEGRAM_MESSAGE.value)
 			logger.error(e)
 
 
 	def new_vk_message(self, event):
-		'''
-			Обработка полученного нового сообщения из ВКонтакте
-		'''
+		'''Обработка полученного нового сообщения из ВКонтакте'''
+
 		try:
 			if event.from_user:
 				match self.get_contact_by_from_id(event.user_id, Services.VK):
-					case contact if isinstance(contact, Errors):
-						self.say_error(contact.value)
-
 					case 0:
 						pass
 						#match self.get_user_data_by_id(event.user_id):
 						#	case contact if isinstance(contact, Errors):
-						#		self.say_error(contact.value)
+						#		synthesis_text(contact.value)
 
 						#	case user if isinstance(user, dict):
 						#		print(user)
@@ -120,7 +111,10 @@ class Messages:
 
 						#		error = self.db.add_vk_message(new_message)
 						#		if isinstance(error, Errors):
-						#			self.say_error(error)
+						#			synthesis_text(error.value)
+
+					case error if isinstance(error, Errors):
+						synthesis_text(error.value)
 
 					case contact if isinstance(contact, Contact):
 						if not states.MUTE:
@@ -139,11 +133,11 @@ class Messages:
 						states.NOTIFICATIONS.vk_messages.append(new_message)
 						error = self.db.add_vk_message(new_message)
 						if isinstance(error, Errors):
-							self.say_error(error)
+							synthesis_text(error.value)
 
 			elif event.from_chat:
 				synthesis_text('У вас новое сообщение в беседе')
 
 		except Exception as e:
-			self.say_error(Errors.PROCESSING_NEW_VK_MESSAGE)
+			synthesis_text(Errors.PROCESSING_NEW_VK_MESSAGE.value)
 			logger.error(e)

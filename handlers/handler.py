@@ -14,7 +14,7 @@ class Handler(PerformingFunctions):
 		super().__init__()
 
 
-	def processing_command(self, command: str, intended_topic: str | None = None) -> None | ActionsAssistant:
+	def processing_command(self, command: str, intended_topic: str | None = None) -> None | ActionsAssistant | Errors:
 		'''Выполение действия (функции) исходя из темы команды'''
 
 		topic = self.determinate_topic(command, intended_topic)
