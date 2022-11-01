@@ -1,6 +1,8 @@
 from utils.logging import logger
 from common.states import states
 from domain.data_class.Topic import Topic
+from domain.enum_class.Errors import Errors
+from domain.enum_class.ActionsAssistant import ActionsAssistant
 from handlers.topics import TOPICS
 from handlers.config import *
 from handlers.performing_functions import PerformingFunctions
@@ -12,18 +14,17 @@ class Handler(PerformingFunctions):
 		super().__init__()
 
 
-	def processing_command(self, command: str, intended_topic: str | None = None):
+	def processing_command(self, command: str, intended_topic: str | None = None) -> None | ActionsAssistant:
 		'''Выполение действия (функции) исходя из темы команды'''
 
-		try:
-			topic = self.determinate_topic(command, intended_topic)
+		topic = self.determinate_topic(command, intended_topic)
+		if isinstance(topic, Errors):
+			self.communication.say_error(topic.value)
+		else:
 			return self.processing_topic(topic)
 
-		except Exception as e:
-			logger.error(e)
 
-
-	def check_topic_on_singleness(self, topic: str) -> bool:
+	def check_nested_functions(self, topic: str) -> bool | Errors:
 		'''Проверка промежуточной темы на вложенность в нее функций'''
 
 		try:
@@ -33,10 +34,10 @@ class Handler(PerformingFunctions):
 			return False
 		except Exception as e:
 			logger.error(e)
-			return False
+			return Errors.CHECK_NESTED_FUNCTIONS
 
 
-	def determinate_topic(self, command: str, intended_topic: str | None = None) -> Topic:
+	def determinate_topic(self, command: str, intended_topic: str | None = None) -> Topic | Errors:
 		'''Определение темы комманды, по словам комманды'''
 
 		try:
@@ -117,10 +118,10 @@ class Handler(PerformingFunctions):
 
 		except Exception as e:
 			logger.error(e)
-			return Topic()
+			return Errors.DETERMINATE_TOPIC
 
 
-	def processing_functions(self, topics: dict) -> Topic:
+	def processing_functions(self, topics: dict) -> Topic | Errors:
 		'''Обработка возможных функций темы и выявление наиболее подходящей'''
 
 		try:
@@ -193,4 +194,4 @@ class Handler(PerformingFunctions):
 
 		except Exception as e:
 			logger.error(e)
-			return Topic()
+			return Errors.PROCESSING_FUNCTIONS

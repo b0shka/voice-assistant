@@ -1,13 +1,13 @@
 import os
 import datetime
 from common.states import states
-from domain.enum_class.Errors import *
-from database.database_sqlite import DatabaseSQLite
 from domain.data_class.Contact import Contact
 from domain.data_class.Message import Message
+from domain.enum_class.Errors import Errors
 from domain.enum_class.CommandMode import CommandMode
 from domain.enum_class.ActionsAssistant import ActionsAssistant
 from handlers.handler import Handler
+from database.database_sqlite import DatabaseSQLite
 from utils.logging import logger
 from utils.speech.yandex_recognition_streaming import listen
 
@@ -55,6 +55,7 @@ class Assistant:
 
 		except Exception as e:
 			logger.error(e)
+			# say error
 
 	
 	def completion_notifications(self):
@@ -81,9 +82,10 @@ class Assistant:
 				
 		except Exception as e:
 			logger.error(e)
+			# say error
 
 	
-	def get_message_object(self, message):
+	def get_message_object(self, message: list) -> Message:
 		return Message(
 			text = message[1],
 			contact_id = message[2],
@@ -110,13 +112,17 @@ class Assistant:
 
 					if topic and topic.topic and not states.ACTION_WITHOUT_FUNCTION:
 						# если была получена тема и в команде присутствует функция
-						if topic.functions or self.handler.check_topic_on_singleness(topic.topic):
+						error = self.handler.check_nested_functions(topic.topic)
+						if topic.functions or isinstance(error, bool):
 							# если была определена вложенная функция или у темы в принципе их нет
 							states.WAITING_RESULT_RECOGNITION = False
 							status_exit = self.handler.processing_topic(topic)
-							# если нет уже полученной темы (при получении промежуточных результатов распознавания речи), то определять ее "вручную"
+							# если уже получена тема, то сразу вызывать обработку темы и выполнение функции
 							if status_exit == ActionsAssistant.EXIT:
 								os._exit(1)
+
+						elif isinstance(error, Errors):
+							pass # say error
 
 						else:
 							intended_topic = topic.topic
@@ -141,3 +147,4 @@ class Assistant:
 
 		except Exception as e:
 			logger.error(e)
+			# say error

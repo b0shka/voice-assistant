@@ -1,6 +1,7 @@
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 from common.config import *
+from domain.enum_class.Errors import Errors
 from utils.logging import logger
 from app.functions.messages import Messages
 
@@ -9,28 +10,30 @@ class VK:
 
 	def __init__(self):
 		try:
+			self.messages = Messages()
 			self.session = vk_api.VkApi(token=VK_TOKEN)
 			self.longpoll = VkLongPoll(self.session)
-			logger.info('Success connect vk api')
 
-			self.messages = Messages()
+			logger.info('Успешное подключение к vk api')
 		except Exception as e:
+			self.messages.say_error(Errors.CONNECT_VK)
 			logger.error(e)
 
 
 	def check_new_messages(self):
 		try:
-			logger.info('Start check new messages in VK')
+			logger.info('Началась проверка на новые сообщения в ВКонтакте')
 
 			for event in self.longpoll.listen():
 				if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
 					self.messages.new_vk_message(event)
 					
 		except Exception as e:
+			self.messages.say_error(Errors.GET_NEW_VK_MESSAGES)
 			logger.error(e)
 
 
-	def send_message(self, user_id: str, message: str):
+	def send_message(self, user_id: str, message: str) -> None | Errors:
 		try:
 			self.session.method(
 				"messages.send", 
@@ -40,24 +43,25 @@ class VK:
 					"random_id": 0
 				}
 			)
-			logger.info(f"Success send messages to {user_id}")
+			logger.info(f"Сообщений успешно отправлено, пользователю: {user_id}")
+
 		except Exception as e:
 			logger.error(e)
+			return Errors.SEND_VK_MESSAGE
 
 
-	def get_user_data_by_id(self, user_id: str):
+	def get_user_data_by_id(self, user_id: str) -> dict | Errors:
 		try:
 			user_data = self.session.method(
 				"users.get",
-				{
-					"user_ids": user_id
-				}
+				{"user_ids": user_id}
 			)
 
 			if user_data[0]:
 				return user_data[0]
 			else:
-				return 0
+				return Errors.FAILED_GET_USER_DATA_VK_BY_ID
+
 		except Exception as e:
 			logger.error(e)
-			return -1
+			return Errors.GET_USER_DATA_VK_BY_ID

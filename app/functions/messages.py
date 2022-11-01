@@ -78,7 +78,7 @@ class Messages:
 						self.say_error(error)
 
 		except Exception as e:
-			self.say_error(Errors.NEW_TELEGRAM_MESSAGE)
+			self.say_error(Errors.PROCESSING_NEW_TELEGRAM_MESSAGE)
 			logger.error(e)
 
 
@@ -95,10 +95,8 @@ class Messages:
 					case 0:
 						pass
 						#match self.get_user_data_by_id(event.user_id):
-						#	case 0:
-						#		logger.error(FAILED_GET_USER_DATA_BY_ID)
-						#	case -1:
-						#		logger.error(ERROR_GET_USER_DATA_BY_ID)
+						#	case contact if isinstance(contact, Errors):
+						#		self.say_error(contact.value)
 
 						#	case user if isinstance(user, dict):
 						#		print(user)
@@ -147,5 +145,5 @@ class Messages:
 				synthesis_text('У вас новое сообщение в беседе')
 
 		except Exception as e:
-			self.say_error(Errors.NEW_VK_MESSAGE)
+			self.say_error(Errors.PROCESSING_NEW_VK_MESSAGE)
 			logger.error(e)

@@ -13,9 +13,7 @@ class Monitoring:
 
 
 	def start(self):
-		'''
-			Начало мониторинга сторонних сервисов (Телеграм, ВКонтакте)
-		'''
+		'''Начало мониторинга сторонних сервисов (Телеграм, ВКонтакте)'''
 		try:
 			check_vk = threading.Thread(target=self.vk.check_new_messages)
 			check_vk.start()
