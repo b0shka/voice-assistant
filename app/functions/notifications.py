@@ -1,4 +1,3 @@
-from utils.logging import logger
 from common.states import states
 from domain.enum_class.Errors import Errors
 from utils.speech.yandex_synthesis import synthesis_text
@@ -108,8 +107,7 @@ class Notifications:
 						synthesis_text('У вас нет новых сообщений в Вконтакте')
 
 		except CantFoundContact:
-			answer = f'Сообщение от неизвестного контакта. {message.text}'
-			synthesis_text(answer)
+			synthesis_text(f'Сообщение от неизвестного контакта. {message.text}')
 
 
 	def clean_messages(self, service: Services) -> None:

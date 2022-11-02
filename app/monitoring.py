@@ -1,8 +1,8 @@
 import asyncio
 import threading
 from utils.logging import logger
-from services.vk.vk import VK
-from services.telegram.telegram import Telegram
+from app.services.vk.vk import VK
+from app.services.telegram.telegram import Telegram
 
 
 class Monitoring:

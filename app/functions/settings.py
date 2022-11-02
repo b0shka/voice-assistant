@@ -1,9 +1,9 @@
 from common.states import states
 from common.exceptions.settings import ErrConvertContacts, ErrConvertMessage
+from common.exceptions.database import ErrGetContacts, ErrGetTelegramMessages, ErrGetVKMessages
 from domain.enum_class.Errors import Errors
 from domain.named_tuple.Contact import Contact
 from domain.named_tuple.Message import Message
-from utils.logging import logger
 from utils.speech.yandex_synthesis import synthesis_text
 from data.database_sqlite import DatabaseSQLite
 from app.functions.communications import say_error
@@ -20,17 +20,14 @@ class Settings:
 
 		try:
 			contacts = self.db.get_contacts()
+			converted_contacts = self._convert_contacts(contacts)
+			states.CONTACTS = converted_contacts
+			
+			if not isLauch:
+				synthesis_text('Контакты успешно обновлены')
 
-			if isinstance(contacts, Errors):
-				say_error(contacts)
-			else:
-				converted_contacts = self._convert_contacts(contacts)
-				states.CONTACTS = converted_contacts
-				if not isLauch:
-					synthesis_text('Контакты успешно обновлены')
-
-		except ErrConvertContacts:
-			say_error(Errors.CONVERT_CONTACT)
+		except (ErrGetContacts, ErrConvertContacts) as e:
+			say_error(e)
 
 
 	def _convert_contacts(self, contacts: list) -> list[Contact]:
@@ -50,7 +47,7 @@ class Settings:
 
 			return convert_contact
 		except IndexError:
-			raise ErrConvertContacts
+			raise ErrConvertContacts(Errors.CONVERT_CONTACT)
 
 
 	def update_notifications(self, isLauch: bool = False) -> None:
@@ -75,8 +72,8 @@ class Settings:
 						self._convert_message(message)
 					)
 
-		except ErrConvertMessage:
-			say_error(Errors.CONVERT_MESSAGE)
+		except (ErrGetVKMessages, ErrConvertMessage) as e:
+			say_error(e)
 
 
 	def _update_telegram_messages(self) -> None:
@@ -91,8 +88,8 @@ class Settings:
 						self._convert_message(message)
 					)
 
-		except ErrConvertMessage:
-			say_error(Errors.CONVERT_MESSAGE)
+		except (ErrGetTelegramMessages, ErrConvertMessage) as e:
+			say_error(e)
 
 
 	def _convert_message(self, message: list) -> Message:
@@ -106,4 +103,4 @@ class Settings:
 			)
 
 		except IndexError:
-			raise ErrConvertMessage
+			raise ErrConvertMessage(Errors.CONVERT_MESSAGE)

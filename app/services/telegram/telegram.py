@@ -3,6 +3,7 @@ from common.config import *
 from domain.enum_class.Errors import Errors
 from utils.logging import logger
 from app.functions.messages import Messages
+from app.functions.communications import say_error
 
 
 class Telegram:
@@ -18,7 +19,7 @@ class Telegram:
 
 			logger.info("Успешное подключение к telegram api")
 		except Exception as e:
-			self.messages.say_error(Errors.CONNECT_TELEGRAM)
+			say_error(Errors.CONNECT_TELEGRAM)
 			logger.error(e)
 
 
@@ -33,21 +34,13 @@ class Telegram:
 			await self.client.start()
 			await self.client.run_until_disconnected()
 		except Exception as e:
-			self.messages.say_error(Errors.GET_NEW_TELEGRAM_MESSAGES)
+			say_error(Errors.GET_NEW_TELEGRAM_MESSAGES)
 			logger.error(e)
 
 
 	def send_message(self, user_id: int, message: str) -> None | Errors:
-		try:
-			pass
-		except Exception as e:
-			logger.error(e)
-			return Errors.SEND_TELEGRAM_MESSAGE
+		pass
 
 		
 	def get_user_data_by_id(self, user_id: int) -> dict | Errors:
-		try:
-			pass
-		except Exception as e:
-			logger.error(e)
-			return Errors.GET_USER_DATA_TELEGRAM_BY_ID
+		pass

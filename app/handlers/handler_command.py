@@ -1,4 +1,5 @@
 from common.states import states
+from common.exceptions.handlers import *
 from domain.named_tuple.Topic import Topic
 from domain.enum_class.Errors import Errors
 from domain.enum_class.TopicsNames import TopicsNames
@@ -9,46 +10,53 @@ from app.handlers.config import *
 def check_nested_functions(topic: TopicsNames) -> bool | Errors:
 	'''Проверка промежуточной темы на вложенность в нее функций'''
 
-	if not TOPICS[topic][NESTED_FUNCTIONS]:
-		return True
+	try:
+		if not TOPICS[topic][NESTED_FUNCTIONS]:
+			return True
 
-	return False
+		return False
+	except KeyError:
+		raise ErrCheckNestedFunctions(Errors.CHECK_NESTED_FUNCIONS)
 
 
 def determinate_topic(command: str, intended_topic: TopicsNames | None = None) -> Topic:
 	'''Определение темы комманды, по словам комманды'''
 
-	topics = {}
+	try:
+		topics = {}
 
-	if not intended_topic:
-		input_topics = TOPICS.keys()
-	else:
-		# добавление уже заранее подобранной темы запроса (при промежуточной результате распознавания речи)
-		input_topics = (intended_topic,)
+		if not intended_topic:
+			input_topics = TOPICS.keys()
+		else:
+			# добавление уже заранее подобранной темы запроса (при промежуточной результате распознавания речи)
+			input_topics = (intended_topic,)
 
-	for topic in input_topics:
-		if topic not in topics.keys():
-			topics[topic] = {FUNCTIONS: False}
+		for topic in input_topics:
+			if topic not in topics.keys():
+				topics[topic] = {FUNCTIONS: False}
 
-		status = _find_functions_command(command, topic)
-		topics[topic][FUNCTIONS] = status
+			status = _find_functions_command(command, topic)
+			topics[topic][FUNCTIONS] = status
 
-		if topics[topic][FUNCTIONS] and TOPICS[topic][NESTED_FUNCTIONS]:
-			nested_functions = _find_nested_functions_with_function(command, topic)
-			topics[topic][NESTED_FUNCTIONS] = nested_functions
-
-		elif states.TOPIC.topic == topic and TOPICS[topic][NESTED_FUNCTIONS]:
-			nested_functions = _find_nested_functions_without_function(command, topic)
-			if not nested_functions:
-				del topics[topic]
-			else:
+			if topics[topic][FUNCTIONS] and TOPICS[topic][NESTED_FUNCTIONS]:
+				nested_functions = _find_nested_functions_with_function(command, topic)
 				topics[topic][NESTED_FUNCTIONS] = nested_functions
 
-		elif not topics[topic][FUNCTIONS]:
-			# удаление темы если в ней не была найдена функция
-			del topics[topic]
+			elif states.TOPIC.topic == topic and TOPICS[topic][NESTED_FUNCTIONS]:
+				nested_functions = _find_nested_functions_without_function(command, topic)
+				if not nested_functions:
+					del topics[topic]
+				else:
+					topics[topic][NESTED_FUNCTIONS] = nested_functions
 
-	return _processing_functions(topics)
+			elif not topics[topic][FUNCTIONS]:
+				# удаление темы если в ней не была найдена функция
+				del topics[topic]
+
+		return _processing_functions(topics)
+	
+	except KeyError:
+		raise ErrDeterminateTopic(Errors.DETERMINATE_TOPIC)
 
 	
 def _find_functions_command(command: str, topic: TopicsNames) -> bool:

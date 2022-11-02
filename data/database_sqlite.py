@@ -1,5 +1,6 @@
 import sqlite3
 from common.config import *
+from common.exceptions.database import *
 from domain.enum_class.Errors import Errors
 from domain.enum_class.Tables import TablesDB
 from domain.named_tuple.Message import Message
@@ -8,7 +9,7 @@ from utils.logging import logger
 
 class DatabaseSQLite:
 	
-	def __init__(self) -> None | Errors:
+	def __init__(self) -> None:
 		try:
 			self._conn = sqlite3.connect(PATH_FILE_DB, check_same_thread=False)
 			self._cursor = self._conn.cursor()
@@ -16,9 +17,10 @@ class DatabaseSQLite:
 			logger.info('База данных успешно подключена')
 		except Exception as e:
 			logger.error(e)
+			raise ErrConnectDB(Errors.CONNECT_DB)
 
 
-	def create_tables(self) -> None | Errors:
+	def create_tables(self) -> None:
 		try:
 			self._cursor.execute(f"""
 				CREATE TABLE IF NOT EXISTS `{TablesDB.TELEGRAM_MESSAGES.value}` (
@@ -61,19 +63,19 @@ class DatabaseSQLite:
 
 		except Exception as e:
 			logger.error(e)
-			return Errors.CREATE_TABLES
+			raise ErrCreateTables(Errors.CREATE_TABLES)
 
 
-	def get_contacts(self) -> list | Errors:
+	def get_contacts(self) -> list:
 		try:
 			self._cursor.execute(f"SELECT * FROM {TablesDB.CONTACTS.value};")
 			return self._cursor.fetchall()
 		except Exception as e:
 			logger.error(e)
-			return Errors.GET_CONTACTS
+			raise ErrGetContacts(Errors.GET_CONTACTS)
 
 
-	def add_telegram_message(self, message: Message) -> None | Errors:
+	def add_telegram_message(self, message: Message) -> None:
 		try:
 			if message.contact_id:
 				self._cursor.execute(
@@ -103,10 +105,10 @@ class DatabaseSQLite:
 
 		except Exception as e:
 			logger.error(e)
-			return Errors.ADD_TELEGRAM_MESSAGE
+			raise ErrAddTelegramMessage(Errors.ADD_TELEGRAM_MESSAGE)
 
 
-	def add_vk_message(self, message: Message) -> None | Errors:
+	def add_vk_message(self, message: Message) -> None:
 		try:
 			if message.contact_id:
 				self._cursor.execute(
@@ -136,28 +138,28 @@ class DatabaseSQLite:
 
 		except Exception as e:
 			logger.error(e)
-			return Errors.ADD_VK_MESSAGE
+			raise ErrAddVKMessage(Errors.ADD_VK_MESSAGE)
 
 
-	def get_telegram_messages(self) -> list | Errors:
+	def get_telegram_messages(self) -> list:
 		try:
 			self._cursor.execute(f"SELECT * FROM {TablesDB.TELEGRAM_MESSAGES.value};")
 			return self._cursor.fetchall()
 		except Exception as e:
 			logger.error(e)
-			return Errors.GET_TELEGRAM_MESSAGES
+			raise ErrGetTelegramMessages(Errors.GET_TELEGRAM_MESSAGES)
 
 
-	def get_vk_messages(self) -> list | Errors:
+	def get_vk_messages(self) -> list:
 		try:
 			self._cursor.execute(f"SELECT * FROM {TablesDB.VK_MESSAGES.value};")
 			return self._cursor.fetchall()
 		except Exception as e:
 			logger.error(e)
-			return Errors.GET_VK_MESSAGES
+			raise ErrGetVKMessages(Errors.GET_VK_MESSAGES)
 
 
-	def delete_telegram_messages(self) -> None | Errors:
+	def delete_telegram_messages(self) -> None:
 		try:
 			self._cursor.execute(f"DELETE FROM {TablesDB.TELEGRAM_MESSAGES.value};")
 
@@ -165,10 +167,10 @@ class DatabaseSQLite:
 			logger.info("Удалены все сообщения из Телеграм")
 		except Exception as e:
 			logger.error(e)
-			return Errors.DELETE_TELEGRAM_MESSAGES
+			raise ErrDeleteTelegramMessages(Errors.DELETE_TELEGRAM_MESSAGES)
 
 
-	def delete_telegram_message_by_id(self, id: int) -> None | Errors:
+	def delete_telegram_message_by_id(self, id: int) -> None:
 		try:
 			self._cursor.execute(f"DELETE FROM {TablesDB.TELEGRAM_MESSAGES.value} WHERE id = {id};")
 
@@ -176,10 +178,10 @@ class DatabaseSQLite:
 			logger.info(f"Удалено сообщение из Телеграм по id: {id}")
 		except Exception as e:
 			logger.error(e)
-			return Errors.DELETE_TELEGRAM_MESSAGE
+			raise ErrDeleteTelegramMessage(Errors.DELETE_TELEGRAM_MESSAGE)
 
 
-	def delete_vk_messages(self) -> None | Errors:
+	def delete_vk_messages(self) -> None:
 		try:
 			self._cursor.execute(f"DELETE FROM {TablesDB.VK_MESSAGES.value};")
 
@@ -187,10 +189,10 @@ class DatabaseSQLite:
 			logger.info("Удалены все сообщения из ВКонтакте")
 		except Exception as e:
 			logger.error(e)
-			return Errors.DELETE_VK_MESSAGES
+			raise ErrDeleteVKMessages(Errors.DELETE_TELEGRAM_MESSAGES)
 
 
-	def delete_vk_message_by_id(self, id: int) -> None | Errors:
+	def delete_vk_message_by_id(self, id: int) -> None:
 		try:
 			self._cursor.execute(f"DELETE FROM {TablesDB.VK_MESSAGES.value} WHERE id = {id};")
 
@@ -198,4 +200,4 @@ class DatabaseSQLite:
 			logger.info(f"Удалено новое сообщение из ВКонтакте по id: {id}")
 		except Exception as e:
 			logger.error(e)
-			return Errors.DELETE_VK_MESSAGE
+			raise ErrDeleteVKMessage(Errors.DELETE_TELEGRAM_MESSAGE)

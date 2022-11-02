@@ -1,9 +1,11 @@
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 from common.config import *
+from common.exceptions.vk import CantGetUserData
 from domain.enum_class.Errors import Errors
 from utils.logging import logger
 from app.functions.messages import Messages
+from app.functions.communications import say_error
 
 
 class VK:
@@ -16,7 +18,7 @@ class VK:
 
 			logger.info('Успешное подключение к vk api')
 		except Exception as e:
-			self.messages.say_error(Errors.CONNECT_VK)
+			say_error(Errors.CONNECT_VK)
 			logger.error(e)
 
 
@@ -29,7 +31,7 @@ class VK:
 					self.messages.new_vk_message(event)
 					
 		except Exception as e:
-			self.messages.say_error(Errors.GET_NEW_VK_MESSAGES)
+			say_error(Errors.GET_NEW_VK_MESSAGES)
 			logger.error(e)
 
 
@@ -59,8 +61,7 @@ class VK:
 
 			if user_data[0]:
 				return user_data[0]
-			else:
-				return Errors.FAILED_GET_USER_DATA_VK_BY_ID
+			raise CantGetUserData
 
 		except Exception as e:
 			logger.error(e)

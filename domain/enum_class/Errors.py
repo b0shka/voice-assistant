@@ -3,6 +3,10 @@ from enum import Enum
 
 class Errors(Enum):
 
+	# Handlers
+	CHECK_NESTED_FUNCIONS = 'Ошибка при проверке на вложенные функции'
+	DETERMINATE_TOPIC = 'Ошибка при определении темы команды'
+
 	# Database
 	CONNECT_DB = 'Ошибка при подключении в базе данных'
 	CREATE_TABLES = 'Ошибка при создании таблиц в базе данных'
@@ -13,7 +17,6 @@ class Errors(Enum):
 	# Contacts
 	GET_CONTACTS = 'Ошибка при получении контактов из базы данных'
 	CONVERT_CONTACT = 'Ошибка при конвертировании списка контактов'
-	NOT_FOUND_CONTACT_BY_BY = 'Не удалось найти контакт по id'
 
 	# Telegram
 	ADD_TELEGRAM_MESSAGE = 'Ошибка при добавлении сообщения из Телеграм в базу данных'
@@ -23,8 +26,6 @@ class Errors(Enum):
 	CONNECT_TELEGRAM = 'Ошибка при подключении к Телеграм'
 	GET_NEW_TELEGRAM_MESSAGES = 'Ошибка при получении нового сообщения в Телеграм'
 	PROCESSING_NEW_TELEGRAM_MESSAGE = 'Ошибка при обработке нового сообщения в Телеграм'
-	SEND_TELEGRAM_MESSAGE = 'Ошибка при отправке сообщения в Телеграм'
-	GET_USER_DATA_TELEGRAM_BY_ID = 'Ошибка при получении информации об аккаунте в Телеграм'
 
 	# VK
 	ADD_VK_MESSAGE = 'Ошибка при добавлении сообщения из ВКонтакте в базу данных'
