@@ -64,13 +64,10 @@ class Settings:
 		try:
 			vk_messages = self.db.get_vk_messages()
 
-			if isinstance(vk_messages, Errors):
-				say_error(vk_messages)
-			else:
-				for message in vk_messages:
-					states.NOTIFICATIONS.vk_messages.append(
-						self._convert_message(message)
-					)
+			for message in vk_messages:
+				states.NOTIFICATIONS.vk_messages.append(
+					self._convert_message(message)
+				)
 
 		except (ErrGetVKMessages, ErrConvertMessage) as e:
 			say_error(e)
@@ -80,13 +77,10 @@ class Settings:
 		try:
 			telegram_messages = self.db.get_telegram_messages()
 
-			if isinstance(telegram_messages, Errors):
-				say_error(telegram_messages)
-			else:
-				for message in telegram_messages:
-					states.NOTIFICATIONS.telegram_messages.append(
-						self._convert_message(message)
-					)
+			for message in telegram_messages:
+				states.NOTIFICATIONS.telegram_messages.append(
+					self._convert_message(message)
+				)
 
 		except (ErrGetTelegramMessages, ErrConvertMessage) as e:
 			say_error(e)

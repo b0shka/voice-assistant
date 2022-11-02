@@ -1,9 +1,9 @@
 from telethon.sync import TelegramClient, events
 from common.config import *
+from common.exceptions.telegram import *
 from domain.enum_class.Errors import Errors
 from utils.logging import logger
 from app.functions.messages import Messages
-from app.functions.communications import say_error
 
 
 class Telegram:
@@ -19,8 +19,8 @@ class Telegram:
 
 			logger.info("Успешное подключение к telegram api")
 		except Exception as e:
-			say_error(Errors.CONNECT_TELEGRAM)
 			logger.error(e)
+			raise ErrConnectTelegram(Errors.CONNECT_TELEGRAM)
 
 
 	async def check_new_messages(self) -> None:
@@ -34,13 +34,13 @@ class Telegram:
 			await self.client.start()
 			await self.client.run_until_disconnected()
 		except Exception as e:
-			say_error(Errors.GET_NEW_TELEGRAM_MESSAGES)
 			logger.error(e)
+			raise ErrGetNewTelegramMessages(Errors.GET_NEW_TELEGRAM_MESSAGES)
 
 
-	def send_message(self, user_id: int, message: str) -> None | Errors:
+	def send_message(self, user_id: int, message: str) -> None:
 		pass
 
 		
-	def get_user_data_by_id(self, user_id: int) -> dict | Errors:
+	def get_user_data_by_id(self, user_id: int) -> dict:
 		pass

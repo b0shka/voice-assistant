@@ -1,11 +1,9 @@
 from common.states import states
-from domain.enum_class.Errors import Errors
-from utils.speech.yandex_synthesis import synthesis_text
+from common.exceptions.messages import CantFoundContact
 from data.database_sqlite import DatabaseSQLite
 from domain.named_tuple.Contact import Contact
 from domain.enum_class.Services import Services
-from app.functions.communications import say_error
-from common.exceptions.messages import CantFoundContact
+from utils.speech.yandex_synthesis import synthesis_text
 
 
 class Notifications:
@@ -54,13 +52,8 @@ class Notifications:
 		states.NOTIFICATIONS.telegram_messages.clear()
 		states.NOTIFICATIONS.vk_messages.clear()
 
-		error = self.db.delete_telegram_messages()
-		if error is not None:
-			say_error(error)
-
-		error = self.db.delete_vk_messages()
-		if error is not None:
-			say_error(error)
+		self.db.delete_telegram_messages()
+		self.db.delete_vk_messages()
 
 		synthesis_text('Уведомления очищены')
 
@@ -113,17 +106,11 @@ class Notifications:
 	def clean_messages(self, service: Services) -> None:
 		match service:
 			case Services.TELEGRAM:
-				error = self.db.delete_telegram_messages()
-				if isinstance(error, Errors):
-					say_error(error)
-				else:
-					states.NOTIFICATIONS.telegram_messages.clear()
-					synthesis_text('Новые сообщения в Телеграм очищены')
+				self.db.delete_telegram_messages()
+				states.NOTIFICATIONS.telegram_messages.clear()
+				synthesis_text('Новые сообщения в Телеграм очищены')
 
 			case Services.VK:
-				error = self.db.delete_vk_messages()
-				if isinstance(error, Errors):
-					say_error(error)
-				else:
-					states.NOTIFICATIONS.vk_messages.clear()
-					synthesis_text('Новые сообщения в Вконтакте очищены')
+				self.db.delete_vk_messages()
+				states.NOTIFICATIONS.vk_messages.clear()
+				synthesis_text('Новые сообщения в Вконтакте очищены')

@@ -52,9 +52,7 @@ class Messages:
 			)
 
 			states.NOTIFICATIONS.telegram_messages.append(new_message)
-			error = self.db.add_telegram_message(new_message)
-			if isinstance(error, Errors):
-				self.say_error(error)
+			self.db.add_telegram_message(new_message)
 
 		except CantFoundContact:
 			# сообщение не от контакта
@@ -86,9 +84,7 @@ class Messages:
 				)
 
 				states.NOTIFICATIONS.vk_messages.append(new_message)
-				error = self.db.add_vk_message(new_message)
-				if isinstance(error, Errors):
-					self.say_error(error)
+				self.db.add_vk_message(new_message)
 
 			elif event.from_chat:
 				synthesis_text('У вас новое сообщение в беседе')
@@ -119,9 +115,7 @@ class Messages:
 			#			new_message
 			#		)
 
-			#		error = self.db.add_vk_message(new_message)
-			#		if isinstance(error, Errors):
-			#			synthesis_text(error.value)
+			#		self.db.add_vk_message(new_message)
 
 		except Exception as e:
 			say_error(Errors.PROCESSING_NEW_VK_MESSAGE)
