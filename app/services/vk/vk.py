@@ -3,6 +3,7 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 from common.config import *
 from common.exceptions.vk import *
 from domain.enum_class.Errors import Errors
+from domain.named_tuple.UserServiceData import VKUserData
 from utils.logging import logger
 from app.functions.messages import Messages
 
@@ -18,7 +19,7 @@ class VK:
 			logger.info('Успешное подключение к vk api')
 		except Exception as e:
 			logger.error(e)
-			raise ErrConnectVK(Errors.CONNECT_VK)
+			raise ErrConnectVK(Errors.CONNECT_VK.value)
 
 
 	def check_new_messages(self) -> None:
@@ -31,10 +32,10 @@ class VK:
 					
 		except Exception as e:
 			logger.error(e)
-			raise ErrGetNewVKMessages(Errors.GET_NEW_VK_MESSAGES)
+			raise ErrGetNewVKMessages(Errors.GET_NEW_VK_MESSAGES.value)
 
 
-	def send_message(self, user_id: str, message: str) -> None:
+	def send_message(self, user_id: int, message: str) -> None:
 		try:
 			self.session.method(
 				"messages.send", 
@@ -48,20 +49,19 @@ class VK:
 
 		except Exception as e:
 			logger.error(e)
-			raise ErrSendVKMessage(Errors.SEND_VK_MESSAGE)
+			raise ErrSendVKMessage(Errors.SEND_VK_MESSAGE.value)
 
 
-	def get_user_data_by_id(self, user_id: str) -> dict:
-		try:
-			user_data = self.session.method(
-				"users.get",
-				{"user_ids": user_id}
+	def get_user_data_by_id(self, user_id: int | str) -> VKUserData:
+		user_data = self.session.method(
+			"users.get",
+			{"user_ids": user_id}
+		)
+		
+		if user_data and user_data[0]:
+			return VKUserData(
+				id = user_data[0]["id"],
+				first_name = user_data[0]["first_name"],
+				last_name = user_data[0]["last_name"],
 			)
-
-			if user_data[0]:
-				return user_data[0]
-			raise CantGetUserData(Errors.FAILED_GET_USER_DATA_VK_BY_ID)
-
-		except Exception as e:
-			logger.error(e)
-			raise ErrGetUserData(Errors.GET_USER_DATA_VK_BY_ID)
+		raise CantGetUserData(Errors.FAILED_GET_USER_DATA_VK_BY_ID.value)

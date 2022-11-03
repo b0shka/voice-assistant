@@ -45,9 +45,9 @@ class Settings:
 				)
 				converted_contacts.append(convert_contact)
 
-			return convert_contact
+			return converted_contacts
 		except IndexError:
-			raise ErrConvertContacts(Errors.CONVERT_CONTACT)
+			raise ErrConvertContacts(Errors.CONVERT_CONTACTS.value)
 
 
 	def update_notifications(self, isLauch: bool = False) -> None:
@@ -97,4 +97,4 @@ class Settings:
 			)
 
 		except IndexError:
-			raise ErrConvertMessage(Errors.CONVERT_MESSAGE)
+			raise ErrConvertMessage(Errors.CONVERT_MESSAGE.value)

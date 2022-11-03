@@ -5,9 +5,9 @@ from domain.named_tuple.Message import Message
 from domain.enum_class.Errors import Errors
 from domain.enum_class.Services import Services
 from data.database_sqlite import DatabaseSQLite
-from utils.logging import logger
 from utils.speech.yandex_synthesis import synthesis_text
 from common.exceptions.messages import CantFoundContact
+from common.exceptions.vk import CantGetUserData
 from app.functions.communications import say_error
 
 
@@ -58,9 +58,11 @@ class Messages:
 			# сообщение не от контакта
 			pass
 
-		except Exception as e:
-			say_error(Errors.PROCESSING_NEW_TELEGRAM_MESSAGE)
-			logger.error(e)
+		except KeyError:
+			say_error(Errors.TELEGRAM_MESSAGE_KEY_IS_EMPTY)
+
+		except ValueError:
+			say_error(Errors.TELEGRAM_INVALID_USER_ID)
 
 
 	def new_vk_message(self, event) -> None:
@@ -91,32 +93,27 @@ class Messages:
 
 		except CantFoundContact:
 			pass
-			#match self.get_user_data_by_id(event.user_id):
-			#	case contact if isinstance(contact, Errors):
-			#		synthesis_text(contact.value)
+			#user = self.get_user_data_by_id(event.user_id):
+			#print(user)
+			#if not states.get_mute_state():
+			#	answer = f'У вас новое сообщение в Вконтакте от пользователя {user["first_name"]}'
+			#	if user["last_name"]:
+			#		answer += f' {user["last_name"]}'
+			#	synthesis_text(answer)
 
-			#	case user if isinstance(user, dict):
-			#		print(user)
-			#		if not states.get_mute_state():
-			#			answer = f'У вас новое сообщение в Вконтакте от пользователя {user["first_name"]}'
-			#			if user["last_name"]:
-			#				answer += f' {user["last_name"]}'
-			#			synthesis_text(answer)
+			#new_message = Message(
+			#	text = event.text, 
+			#	from_id = event.user_id,
+			#	first_name = user['first_name'],
+			#	last_name = user['last_name']
+			#)
 
-			#		new_message = Message(
-			#			text = event.text, 
-			#			from_id = event.user_id,
-			#			first_name = user['first_name'],
-			#			last_name = user['last_name']
-			#		)
+			#states.change_notifications(
+			#	VK_MESSAGES_NOTIFICATION, 
+			#	new_message
+			#)
 
-			#		states.change_notifications(
-			#			VK_MESSAGES_NOTIFICATION, 
-			#			new_message
-			#		)
+			#self.db.add_vk_message(new_message)
 
-			#		self.db.add_vk_message(new_message)
-
-		except Exception as e:
-			say_error(Errors.PROCESSING_NEW_VK_MESSAGE)
-			logger.error(e)
+		except CantGetUserData as e:
+			say_error(e)

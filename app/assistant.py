@@ -1,5 +1,6 @@
 from app.functions.settings import Settings
-from app.handlers.handler_command import listen_command
+from app.handlers.handler_command import processing_command
+from utils.speech.yandex_recognition_streaming import listen
 
 
 def launch() -> None:
@@ -12,4 +13,6 @@ def start_listen() -> None:
 	'''Начальная настройка и запуск прослушивания'''
 
 	launch()
-	listen_command()
+	
+	for command in listen():
+		processing_command(command)

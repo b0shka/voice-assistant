@@ -7,16 +7,16 @@ from app.handlers.topics import TOPICS
 from app.handlers.config import *
 
 
-def check_nested_functions(topic: TopicsNames) -> bool | Errors:
+def check_nested_functions(topic: TopicsNames) -> bool:
 	'''Проверка промежуточной темы на вложенность в нее функций'''
 
 	try:
 		if not TOPICS[topic][NESTED_FUNCTIONS]:
-			return True
+			return False
 
-		return False
+		return True
 	except KeyError:
-		raise ErrCheckNestedFunctions(Errors.CHECK_NESTED_FUNCIONS)
+		raise ErrCheckNestedFunctions(Errors.CHECK_NESTED_FUNCIONS.value)
 
 
 def determinate_topic(command: str, intended_topic: TopicsNames | None = None) -> Topic:
@@ -56,7 +56,7 @@ def determinate_topic(command: str, intended_topic: TopicsNames | None = None) -
 		return _processing_functions(topics)
 	
 	except KeyError:
-		raise ErrDeterminateTopic(Errors.DETERMINATE_TOPIC)
+		raise ErrDeterminateTopic(Errors.DETERMINATE_TOPIC.value)
 
 	
 def _find_functions_command(command: str, topic: TopicsNames) -> bool:

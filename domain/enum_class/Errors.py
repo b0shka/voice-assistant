@@ -16,7 +16,7 @@ class Errors(Enum):
 	
 	# Contacts
 	GET_CONTACTS = 'Ошибка при получении контактов из базы данных'
-	CONVERT_CONTACT = 'Ошибка при конвертировании списка контактов'
+	CONVERT_CONTACTS = 'Ошибка при конвертировании списка контактов'
 
 	# Telegram
 	ADD_TELEGRAM_MESSAGE = 'Ошибка при добавлении сообщения из Телеграм в базу данных'
@@ -25,7 +25,8 @@ class Errors(Enum):
 	DELETE_TELEGRAM_MESSAGES = 'Ошибка при удалении сообщений из Телеграм в базе данных'
 	CONNECT_TELEGRAM = 'Ошибка при подключении к Телеграм'
 	GET_NEW_TELEGRAM_MESSAGES = 'Ошибка при получении нового сообщения в Телеграм'
-	PROCESSING_NEW_TELEGRAM_MESSAGE = 'Ошибка при обработке нового сообщения в Телеграм'
+	TELEGRAM_MESSAGE_KEY_IS_EMPTY = 'В данных нового сообщения отсутствуют необходимые ключи'
+	TELEGRAM_INVALID_USER_ID = 'Указан не валидный идентификатор пользователя'
 
 	# VK
 	ADD_VK_MESSAGE = 'Ошибка при добавлении сообщения из ВКонтакте в базу данных'
@@ -36,7 +37,6 @@ class Errors(Enum):
 	GET_NEW_VK_MESSAGES = 'Ошибка при получении нового сообщения в ВКонтакте'
 	PROCESSING_NEW_VK_MESSAGE = 'Ошибка при обработке нового сообщения в ВКонтакте'
 	SEND_VK_MESSAGE = 'Ошибка при отправке сообщения в ВКонтакте'
-	GET_USER_DATA_VK_BY_ID = 'Ошибка при получении информации об аккаунте в ВКонтакте'
 	FAILED_GET_USER_DATA_VK_BY_ID = 'Не удалось получить информации об аккаунте в ВКонтакте'
 
 	# Other

@@ -11,6 +11,3 @@ class ErrSendVKMessage(Exception):
 
 class CantGetUserData(Exception):
 	'''Не удалось получить информации об аккаунте в ВКонтакте'''
-
-class ErrGetUserData(Exception):
-	'''Ошибка при получении информации об аккаунте в ВКонтакте'''

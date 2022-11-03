@@ -2,3 +2,4 @@ settings/
 logs/
 .env
 utils/speech/models/
+tests/logs/

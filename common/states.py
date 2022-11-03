@@ -1,5 +1,3 @@
-from typing import List
-from dataclasses import field
 from domain.named_tuple.Topic import Topic
 from domain.named_tuple.Contact import Contact
 from domain.data_class.Notifications import Notifications
@@ -13,7 +11,7 @@ class States:
 	ACTION_WITHOUT_FUNCTION = False # Статус вызова комманды с действие, но без функции, которое должно основываться на текущей теме разговора
 
 	TOPIC = Topic() # Текущая тема разговора
-	CONTACTS: List[Contact] = field(default_factory=list) # Список контактов
+	CONTACTS: list[Contact] = [] # Список контактов
 	NOTIFICATIONS = Notifications() # Уведомления которые будут накапливаться и которые можно просматривать и очищать
 
 

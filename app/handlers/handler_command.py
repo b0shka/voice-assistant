@@ -9,22 +9,22 @@ from domain.enum_class.ActionsAssistant import ActionsAssistant
 from app.handlers.handler_topic import determinate_topic, check_nested_functions
 from app.handlers.performing_functions import processing_topic
 from app.functions.communications import say_error
-from utils.speech.yandex_recognition_streaming import listen
 
 
-def listen_command() -> None:
-	'''Начало прослушивания микрофона'''
+intended_topic = None
 
-	intended_topic = None
+def processing_command(command: Command) -> None:
+	'''Обработка полученной команды'''
+	global intended_topic
 
-	for command in listen():
-		if command.mode == CommandMode.INTERMEDIATE:
-			find_topic = _processing_intermediate_command(command)
-			if find_topic is not None:
-				intended_topic = find_topic
+	if command.mode == CommandMode.INTERMEDIATE:
+		find_topic = _processing_intermediate_command(command)
+		if find_topic is not None:
+			intended_topic = find_topic
 
-		elif command.mode == CommandMode.FINITE:
-			_processing_finite_command(command, intended_topic)
+	elif command.mode == CommandMode.FINITE:
+		_processing_finite_command(command, intended_topic)
+		intended_topic = None
 
 
 def _processing_intermediate_command(command: Command) -> None | TopicsNames:
@@ -35,11 +35,12 @@ def _processing_intermediate_command(command: Command) -> None | TopicsNames:
 		print(f'{time_now} [INTERMEDIATE] {command.text}')
 		topic = determinate_topic(command.text)
 
-		if topic and topic.topic and not states.ACTION_WITHOUT_FUNCTION:
+		if topic.topic and not states.ACTION_WITHOUT_FUNCTION:
 			# если была получена тема и в команде присутствует функция
 			status = check_nested_functions(topic.topic)
+			print('STATUS NESTED FUNCTIONS: ', status)
 
-			if topic.functions or status:
+			if topic.functions or not status:
 				# если была определена вложенная функция или у темы в принципе их нет
 				states.WAITING_RESULT_RECOGNITION = False
 
