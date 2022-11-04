@@ -2,6 +2,8 @@ from enum import Enum
 
 
 class FunctionsNames(Enum):
+	'''Названия всех допустимых функций ассистента'''
+	
 	SHOW_NOTIFICATIONS = 'show_notifications'
 	CLEAN_NOTIFICATIONS = 'clean_notifications'
 	UPDATE_NOTIFICATIONS = 'update_notifications'

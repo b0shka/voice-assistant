@@ -4,12 +4,12 @@ from unittest import TestCase, main
 sys.path.append('/home/q/p/projects/voice-assistant/version_2.0')
 from domain.enum_class.Services import Services
 from app.functions.messages import Messages
-from app.assistant import launch
+from app.assistant import configure_assistant
 from common.exceptions.messages import CantFoundContact
 
 
 messages = Messages()
-launch()
+configure_assistant()
 
 
 class TestMessages(TestCase):

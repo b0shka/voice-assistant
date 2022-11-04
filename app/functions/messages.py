@@ -4,7 +4,7 @@ from domain.named_tuple.Contact import Contact
 from domain.named_tuple.Message import Message
 from domain.enum_class.Errors import Errors
 from domain.enum_class.Services import Services
-from data.database_sqlite import DatabaseSQLite
+from domain.repository.database_sqlite import DatabaseSQLite
 from utils.speech.yandex_synthesis import synthesis_text
 from common.exceptions.messages import CantFoundContact
 from common.exceptions.vk import CantGetUserData
@@ -13,8 +13,8 @@ from app.functions.communications import say_error
 
 class Messages:
 
-	def __init__(self) -> None:
-		self.db = DatabaseSQLite()
+	def __init__(self, db: DatabaseSQLite) -> None:
+		self.db = db
 
 
 	def get_contact_by_from_id(self, id: int, service: Services) -> Contact:
@@ -37,7 +37,18 @@ class Messages:
 			# тут будет ошибка, если сообщение отправлено не от человека, а от канала или чата
 			from_id = int(message['from_id']['user_id'])
 			contact = self.get_contact_by_from_id(from_id, Services.TELEGRAM)
-			
+
+		except CantFoundContact:
+			# сообщение не от контакта
+			pass
+
+		except KeyError:
+			say_error(Errors.TELEGRAM_MESSAGE_KEY_IS_EMPTY)
+
+		except ValueError:
+			say_error(Errors.TELEGRAM_INVALID_USER_ID)
+		
+		else:
 			if not states.MUTE:
 				answer = f'У вас новое сообщение в Телеграм от контакта {contact.first_name}'
 				if contact.last_name:
@@ -54,24 +65,43 @@ class Messages:
 			states.NOTIFICATIONS.telegram_messages.append(new_message)
 			self.db.add_telegram_message(new_message)
 
-		except CantFoundContact:
-			# сообщение не от контакта
-			pass
-
-		except KeyError:
-			say_error(Errors.TELEGRAM_MESSAGE_KEY_IS_EMPTY)
-
-		except ValueError:
-			say_error(Errors.TELEGRAM_INVALID_USER_ID)
-
 
 	def new_vk_message(self, event) -> None:
 		'''Обработка полученного нового сообщения из ВКонтакте'''
 
-		try:
-			if event.from_user:
+		if event.from_user:
+			try:
 				contact = self.get_contact_by_from_id(event.user_id, Services.VK)
+				'''
+				user = self.get_user_data_by_id(event.user_id):
+				print(user)
+				if not states.get_mute_state():
+					answer = f'У вас новое сообщение в Вконтакте от пользователя {user["first_name"]}'
+					if user["last_name"]:
+						answer += f' {user["last_name"]}'
+					synthesis_text(answer)
 
+				new_message = Message(
+					text = event.text, 
+					from_id = event.user_id,
+					first_name = user['first_name'],
+					last_name = user['last_name']
+				)
+
+				states.change_notifications(
+					VK_MESSAGES_NOTIFICATION, 
+					new_message
+				)
+
+				self.db.add_vk_message(new_message)
+				'''
+			except CantFoundContact:
+				pass
+
+			except CantGetUserData as e:
+				say_error(e)
+
+			else:
 				if not states.MUTE:
 					answer = f'У вас новое сообщение в Вконтакте от контакта {contact.first_name}'
 					if contact.last_name:
@@ -88,32 +118,5 @@ class Messages:
 				states.NOTIFICATIONS.vk_messages.append(new_message)
 				self.db.add_vk_message(new_message)
 
-			elif event.from_chat:
-				synthesis_text('У вас новое сообщение в беседе')
-
-		except CantFoundContact:
-			pass
-			#user = self.get_user_data_by_id(event.user_id):
-			#print(user)
-			#if not states.get_mute_state():
-			#	answer = f'У вас новое сообщение в Вконтакте от пользователя {user["first_name"]}'
-			#	if user["last_name"]:
-			#		answer += f' {user["last_name"]}'
-			#	synthesis_text(answer)
-
-			#new_message = Message(
-			#	text = event.text, 
-			#	from_id = event.user_id,
-			#	first_name = user['first_name'],
-			#	last_name = user['last_name']
-			#)
-
-			#states.change_notifications(
-			#	VK_MESSAGES_NOTIFICATION, 
-			#	new_message
-			#)
-
-			#self.db.add_vk_message(new_message)
-
-		except CantGetUserData as e:
-			say_error(e)
+		elif event.from_chat:
+			synthesis_text('У вас новое сообщение в беседе')

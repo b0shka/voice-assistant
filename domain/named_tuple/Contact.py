@@ -1,6 +1,8 @@
 from typing import NamedTuple
 
 class Contact(NamedTuple):
+	'''Хранение данных контакта'''
+
 	id: int
 	first_name: str
 	last_name: str | None

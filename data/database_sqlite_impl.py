@@ -4,14 +4,15 @@ from common.exceptions.database import *
 from domain.enum_class.Errors import Errors
 from domain.enum_class.Tables import TablesDB
 from domain.named_tuple.Message import Message
+from domain.repository.database_sqlite import DatabaseSQLite
 from utils.logging import logger
 
 
-class DatabaseSQLite:
+class DatabaseSQLiteImpl(DatabaseSQLite):
 	
-	def __init__(self) -> None:
+	def __init__(self, conn: sqlite3.Connection) -> None:
 		try:
-			self._conn = sqlite3.connect(PATH_FILE_DB, check_same_thread=False)
+			self._conn = conn
 			self._cursor = self._conn.cursor()
 
 			logger.info('База данных успешно подключена')

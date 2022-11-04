@@ -2,6 +2,8 @@ from enum import Enum
 
 
 class TopicsNames(Enum):
+	'''Названия всех допустимых тем в ассистенте'''
+
 	EXIT_TOPIC = 'exit'
 	NOTIFICATIONS_TOPIC = 'notifications'
 	TELEGRAM_MESSAGES_TOPIC = 'telegram_messages'

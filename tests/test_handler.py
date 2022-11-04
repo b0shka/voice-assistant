@@ -2,6 +2,7 @@ import sys
 from unittest import TestCase, main
 
 sys.path.append('/home/q/p/projects/voice-assistant/version_2.0')
+from common.states import states
 from domain.enum_class.TopicsNames import TopicsNames
 from domain.enum_class.FunctionsNames import FunctionsNames
 from domain.named_tuple.Topic import Topic
@@ -23,14 +24,24 @@ class TestHandlers(TestCase):
 			determinate_topic('уведомления'),
 			Topic(topic=TopicsNames.NOTIFICATIONS_TOPIC, functions=None)
 		)
+		states.TOPIC = Topic(topic=TopicsNames.NOTIFICATIONS_TOPIC, functions=None)
 		self.assertEqual(
-			determinate_topic('посмотреть уведомления', TopicsNames.NOTIFICATIONS_TOPIC),
+			determinate_topic('посмотреть', TopicsNames.NOTIFICATIONS_TOPIC),
 			Topic(topic=TopicsNames.NOTIFICATIONS_TOPIC, functions=FunctionsNames.SHOW_NOTIFICATIONS)
+		)
+		self.assertEqual(
+			determinate_topic('очистить уведомления', TopicsNames.NOTIFICATIONS_TOPIC),
+			Topic(topic=TopicsNames.NOTIFICATIONS_TOPIC, functions=FunctionsNames.CLEAN_NOTIFICATIONS)
 		)
 
 		self.assertEqual(
 			determinate_topic('сообщения в телеграм'),
 			Topic(topic=TopicsNames.TELEGRAM_MESSAGES_TOPIC, functions=None)
+		)
+		states.TOPIC = Topic(topic=TopicsNames.TELEGRAM_MESSAGES_TOPIC, functions=None)
+		self.assertEqual(
+			determinate_topic('посмотреть'),
+			Topic(topic=TopicsNames.TELEGRAM_MESSAGES_TOPIC, functions=FunctionsNames.SHOW_TELEGRAM_MESSAGES)
 		)
 		self.assertEqual(
 			determinate_topic('очистить сообщения в телеграм'),
@@ -45,6 +56,11 @@ class TestHandlers(TestCase):
 			determinate_topic('обновить контакты'),
 			Topic(topic=TopicsNames.CONTACTS_TOPIC, functions=FunctionsNames.UPDATE_CONTACTS)
 		)
+		states.TOPIC = Topic(topic=TopicsNames.CONTACTS_TOPIC, functions=None)
+		self.assertEqual(
+			determinate_topic('посмотреть'),
+			Topic(topic=TopicsNames.CONTACTS_TOPIC, functions=FunctionsNames.SHOW_CONTACTS)
+		)
 		self.assertEqual(
 			determinate_topic('контакты'),
 			Topic(topic=TopicsNames.CONTACTS_TOPIC, functions=None)
@@ -53,6 +69,11 @@ class TestHandlers(TestCase):
 		self.assertEqual(
 			determinate_topic('посмотреть сообщения в вк'),
 			Topic(topic=TopicsNames.VK_MESSAGES_TOPIC, functions=FunctionsNames.SHOW_VK_MESSAGES)
+		)
+		states.TOPIC = Topic(topic=TopicsNames.VK_MESSAGES_TOPIC, functions=None)
+		self.assertEqual(
+			determinate_topic('очистить'),
+			Topic(topic=TopicsNames.VK_MESSAGES_TOPIC, functions=FunctionsNames.CLEAN_VK_MESSAGES)
 		)
 
 		self.assertEqual(

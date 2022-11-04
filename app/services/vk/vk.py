@@ -53,15 +53,19 @@ class VK:
 
 
 	def get_user_data_by_id(self, user_id: int | str) -> VKUserData:
-		user_data = self.session.method(
-			"users.get",
-			{"user_ids": user_id}
-		)
-		
-		if user_data and user_data[0]:
-			return VKUserData(
-				id = user_data[0]["id"],
-				first_name = user_data[0]["first_name"],
-				last_name = user_data[0]["last_name"],
+		try:
+			user_data = self.session.method(
+				"users.get",
+				{"user_ids": user_id}
 			)
-		raise CantGetUserData(Errors.FAILED_GET_USER_DATA_VK_BY_ID.value)
+		except Exception as e:
+			logger.error(e)
+			raise CantGetUserData(Errors.GET_USER_DATA_VK_BY_ID.value)
+		else:
+			if user_data and user_data[0]:
+				return VKUserData(
+					id = user_data[0]["id"],
+					first_name = user_data[0]["first_name"],
+					last_name = user_data[0]["last_name"],
+				)
+			raise CantGetUserData(Errors.FAILED_GET_USER_DATA_VK_BY_ID.value)

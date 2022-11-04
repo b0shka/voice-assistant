@@ -1,6 +1,6 @@
 from common.states import states
 from common.exceptions.messages import CantFoundContact
-from data.database_sqlite import DatabaseSQLite
+from domain.repository.database_sqlite import DatabaseSQLite
 from domain.named_tuple.Contact import Contact
 from domain.enum_class.Services import Services
 from utils.speech.yandex_synthesis import synthesis_text
@@ -8,8 +8,8 @@ from utils.speech.yandex_synthesis import synthesis_text
 
 class Notifications:
 
-	def __init__(self) -> None:
-		self.db = DatabaseSQLite()
+	def __init__(self, db: DatabaseSQLite) -> None:
+		self.db = db
 
 
 	def get_contact_by_contact_id(self, id: int) -> Contact:
@@ -59,48 +59,48 @@ class Notifications:
 
 
 	def viewing_messages(self, service: Services) -> None:
-		try:
-			match service:
-				case Services.TELEGRAM:
-					messages = states.NOTIFICATIONS.telegram_messages
-				case Services.VK:
-					messages = states.NOTIFICATIONS.vk_messages
+		match service:
+			case Services.TELEGRAM:
+				messages = states.NOTIFICATIONS.telegram_messages
+			case Services.VK:
+				messages = states.NOTIFICATIONS.vk_messages
 
-			for message in messages:
-				if message.first_name:
-					if message.contact_id:
-						answer = f'Сообщение от контакта {message.first_name}'
-					else:
-						answer = f'Сообщение от пользователя {message.first_name}'
+		for message in messages:
+			if message.first_name:
+				if message.contact_id:
+					answer = f'Сообщение от контакта {message.first_name}'
+				else:
+					answer = f'Сообщение от пользователя {message.first_name}'
 
-					if message.last_name:
-						answer += f' {message.last_name}'
+				if message.last_name:
+					answer += f' {message.last_name}'
+				answer += f'. {message.text}'
+				synthesis_text(answer)
+				
+			else:
+				if message.contact_id:
+					try:
+						contact = self.get_contact_by_contact_id(message.contact_id)
+					except CantFoundContact:
+						synthesis_text(f'Сообщение от неизвестного контакта. {message.text}')
+						
+					answer = f'Сообщение от контакта {contact.first_name}'
+
+					if contact.last_name:
+						answer += f' {contact.last_name}'
+
 					answer += f'. {message.text}'
 					synthesis_text(answer)
-					
+
 				else:
-					if message.contact_id:
-						contact = self.get_contact_by_contact_id(message.contact_id)
-						answer = f'Сообщение от контакта {contact.first_name}'
+					pass # get by from_id with vk api
 
-						if contact.last_name:
-							answer += f' {contact.last_name}'
-
-						answer += f'. {message.text}'
-						synthesis_text(answer)
-
-					else:
-						pass # get by from_id with vk api
-
-			if not len(messages):
-				match service:
-					case Services.TELEGRAM:
-						synthesis_text('У вас нет новых сообщений в Телеграм')
-					case Services.VK:
-						synthesis_text('У вас нет новых сообщений в Вконтакте')
-
-		except CantFoundContact:
-			synthesis_text(f'Сообщение от неизвестного контакта. {message.text}')
+		if not len(messages):
+			match service:
+				case Services.TELEGRAM:
+					synthesis_text('У вас нет новых сообщений в Телеграм')
+				case Services.VK:
+					synthesis_text('У вас нет новых сообщений в Вконтакте')
 
 
 	def clean_messages(self, service: Services) -> None:

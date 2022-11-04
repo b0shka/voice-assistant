@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class Errors(Enum):
+	'''Текст ошибок ассистента для выдаче пользователю'''
 
 	# Handlers
 	CHECK_NESTED_FUNCIONS = 'Ошибка при проверке на вложенные функции'
@@ -37,6 +38,7 @@ class Errors(Enum):
 	GET_NEW_VK_MESSAGES = 'Ошибка при получении нового сообщения в ВКонтакте'
 	PROCESSING_NEW_VK_MESSAGE = 'Ошибка при обработке нового сообщения в ВКонтакте'
 	SEND_VK_MESSAGE = 'Ошибка при отправке сообщения в ВКонтакте'
+	GET_USER_DATA_VK_BY_ID = 'Ошибка при получении информации об аккаунте в ВКонтакте'
 	FAILED_GET_USER_DATA_VK_BY_ID = 'Не удалось получить информации об аккаунте в ВКонтакте'
 
 	# Other

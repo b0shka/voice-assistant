@@ -1,18 +1,18 @@
 from common.states import states
-from common.exceptions.settings import ErrConvertContacts, ErrConvertMessage
-from common.exceptions.database import ErrGetContacts, ErrGetTelegramMessages, ErrGetVKMessages
+from common.exceptions.settings import *
+from common.exceptions.database import *
 from domain.enum_class.Errors import Errors
 from domain.named_tuple.Contact import Contact
 from domain.named_tuple.Message import Message
+from domain.repository.database_sqlite import DatabaseSQLite
 from utils.speech.yandex_synthesis import synthesis_text
-from data.database_sqlite import DatabaseSQLite
 from app.functions.communications import say_error
 
 
 class Settings:
 	
-	def __init__(self) -> None:
-		self.db = DatabaseSQLite()
+	def __init__(self, db: DatabaseSQLite) -> None:
+		self.db = db
 
 
 	def update_contacts(self, isLauch: bool = False) -> None:
@@ -21,13 +21,13 @@ class Settings:
 		try:
 			contacts = self.db.get_contacts()
 			converted_contacts = self._convert_contacts(contacts)
+		except (ErrGetContacts, ErrConvertContacts) as e:
+			say_error(e)
+		else:
 			states.CONTACTS = converted_contacts
 			
 			if not isLauch:
 				synthesis_text('Контакты успешно обновлены')
-
-		except (ErrGetContacts, ErrConvertContacts) as e:
-			say_error(e)
 
 
 	def _convert_contacts(self, contacts: list) -> list[Contact]:

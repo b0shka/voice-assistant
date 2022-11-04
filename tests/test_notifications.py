@@ -4,12 +4,12 @@ from unittest import TestCase, main
 sys.path.append('/home/q/p/projects/voice-assistant/version_2.0')
 from domain.named_tuple.Contact import Contact
 from app.functions.notifications import Notifications
-from app.assistant import launch
+from app.assistant import configure_assistant
 from common.exceptions.messages import CantFoundContact
 
 
 notifications = Notifications()
-launch()
+configure_assistant()
 
 
 class TestNotifications(TestCase):

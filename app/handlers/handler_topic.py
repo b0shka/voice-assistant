@@ -1,195 +1,125 @@
 from common.states import states
-from common.exceptions.handlers import *
 from domain.named_tuple.Topic import Topic
-from domain.enum_class.Errors import Errors
+from domain.enum_class.Services import Services
+from domain.enum_class.ActionsAssistant import ActionsAssistant
 from domain.enum_class.TopicsNames import TopicsNames
-from app.handlers.topics import TOPICS
+from domain.enum_class.FunctionsNames import FunctionsNames
+from app.functions.communications import *
 from app.handlers.config import *
+from app.functions.notifications import Notifications
+from app.functions.settings import Settings
 
 
-def check_nested_functions(topic: TopicsNames) -> bool:
-	'''Проверка промежуточной темы на вложенность в нее функций'''
+class HandlerTopic:
 
-	try:
-		if not TOPICS[topic][NESTED_FUNCTIONS]:
-			return False
-
-		return True
-	except KeyError:
-		raise ErrCheckNestedFunctions(Errors.CHECK_NESTED_FUNCIONS.value)
-
-
-def determinate_topic(command: str, intended_topic: TopicsNames | None = None) -> Topic:
-	'''Определение темы комманды, по словам комманды'''
-
-	try:
-		topics = {}
-
-		if not intended_topic:
-			input_topics = TOPICS.keys()
-		else:
-			# добавление уже заранее подобранной темы запроса (при промежуточной результате распознавания речи)
-			input_topics = (intended_topic,)
-
-		for topic in input_topics:
-			if topic not in topics.keys():
-				topics[topic] = {FUNCTIONS: False}
-
-			status = _find_functions_command(command, topic)
-			topics[topic][FUNCTIONS] = status
-
-			if topics[topic][FUNCTIONS] and TOPICS[topic][NESTED_FUNCTIONS]:
-				nested_functions = _find_nested_functions_with_function(command, topic)
-				topics[topic][NESTED_FUNCTIONS] = nested_functions
-
-			elif states.TOPIC.topic == topic and TOPICS[topic][NESTED_FUNCTIONS]:
-				nested_functions = _find_nested_functions_without_function(command, topic)
-				if not nested_functions:
-					del topics[topic]
-				else:
-					topics[topic][NESTED_FUNCTIONS] = nested_functions
-
-			elif not topics[topic][FUNCTIONS]:
-				# удаление темы если в ней не была найдена функция
-				del topics[topic]
-
-		return _processing_functions(topics)
-	
-	except KeyError:
-		raise ErrDeterminateTopic(Errors.DETERMINATE_TOPIC.value)
-
-	
-def _find_functions_command(command: str, topic: TopicsNames) -> bool:
-	'''Определение функций в команде'''
-
-	number_occurrences = []
-
-	for word in command.split():
-		if word != '':
-			if isinstance(TOPICS[topic][FUNCTIONS][0], tuple):
-				# проверка на вхожение слов команды во все кортежи возможных слов (которые являются обязательными)
-				for index, func in enumerate(TOPICS[topic][FUNCTIONS]):
-					if index not in number_occurrences and word in func:
-						number_occurrences.append(index)
-			else:
-				if word in TOPICS[topic][FUNCTIONS]:
-					return True
-
-	if isinstance(TOPICS[topic][FUNCTIONS][0], tuple) \
-	and len(number_occurrences) == len(TOPICS[topic][FUNCTIONS]):
-		return True
-
-	return False
+	def __init__(
+		self, 
+		notifications: Notifications,
+		settings: Settings
+	):
+		self.notifications = notifications
+		self.settings = settings
 
 
-def _find_nested_functions_with_function(command: str, topic: TopicsNames) -> dict:
-	'''Определение действий и доп. слов в команде, если была выявлена функция и у этой темы есть вложенные функции'''
-	
-	nested_functions = {}
+	def processing_topic(self, topic: Topic) -> None | ActionsAssistant:
+		'''Выполнение функции исходя из полученной темы и вложенной в нее функции (не всегда)
+	'''
 
-	for function in TOPICS[topic][NESTED_FUNCTIONS].keys():
-		nested_functions[function] = {
-			ACTIONS: 0,
-			ADDITIONALLY: 0
-		}
+		print(topic)
 
-		for word in command.split():
-			if word in TOPICS[topic][NESTED_FUNCTIONS][function][ACTIONS]:
-				nested_functions[function][ACTIONS] += 1
+		if states.WAITING_RESPONSE and topic.topic != states.TOPIC.topic:
+			# если ассистент ожидает ответ, но полученная тема или функция темы не соответсвует ожидаемой
+			action_not_found_in_topic()
 
-			if word in TOPICS[topic][NESTED_FUNCTIONS][function][ADDITIONALLY]:
-				nested_functions[function][ADDITIONALLY] += 1
-
-		if not nested_functions[function][ACTIONS] and \
-		not nested_functions[function][ADDITIONALLY]:
-			del nested_functions[function]
-
-	return nested_functions
-
-
-def _find_nested_functions_without_function(command: str, topic: TopicsNames) -> dict:
-	'''Обработка команды без функции, но по теме диалога'''
-
-	nested_functions = {}
-
-	for function in TOPICS[topic][NESTED_FUNCTIONS].keys():
-		nested_functions[function] = {ACTIONS: 0}
-
-		for word in command.split():
-			if word in TOPICS[topic][NESTED_FUNCTIONS][function][ACTIONS]:
-				nested_functions[function][ACTIONS] += 1
-
-		if not nested_functions[function][ACTIONS]:
-			del nested_functions[function]
-
-	return nested_functions
-
-
-def _processing_functions(topics: dict) -> Topic:
-	'''Обработка возможных функций темы и выявление наиболее подходящей'''
-
-	if len(topics) == 0:
-		return Topic()
-	
-	list_topics = tuple(topics.keys())
-	handler_topic = list_topics[0]
-
-	if len(topics) > 1 and not topics[handler_topic][FUNCTIONS]:
-		# если было получено несколько тем и при этом у первой темы не была определена функция
-		handler_topic = list_topics[1]
-
-	if topics[handler_topic][FUNCTIONS]:
-		# обработка темы у которой была выявлена функция
-
-		if NESTED_FUNCTIONS not in topics[handler_topic].keys() or not topics[handler_topic][NESTED_FUNCTIONS]:
-			# возвращение темы у которой нет вложенных функций
-			states.ACTION_WITHOUT_FUNCTION = False
-			return Topic(handler_topic, None)
+		elif not topic.topic:
+			# если тема не была определена (несуществующая функция)
+			nothing_found()
 
 		else:
-			if len(topics[handler_topic][NESTED_FUNCTIONS].keys()) == 1:
-				# возвращение темы у которой была выявлена только одна подходящая вложенная функция
-				states.ACTION_WITHOUT_FUNCTION = False
-				return Topic(
-					topic = handler_topic, 
-					functions = next(iter(topics[handler_topic][NESTED_FUNCTIONS]))
-				)
+			# обработка полученной темы и вложенной функции
+			states.TOPIC = Topic(
+				topic = topic.topic,
+				functions = topic.functions
+			)
 
+			if not topic.functions:
+				states.WAITING_RESPONSE = True
 			else:
-				# определение наиболее подходящей вложенной функции из нескольких допустимых
-				###
-				result_function = {
-					NAME: None,
-					ACTIONS: 0,
-					ADDITIONALLY: 0
-				}
+				states.WAITING_RESPONSE = False
 
-				for function in topics[handler_topic][NESTED_FUNCTIONS].keys():
-					if topics[handler_topic][NESTED_FUNCTIONS][function][ACTIONS] > result_function[ACTIONS]:
-						result_function = topics[handler_topic][NESTED_FUNCTIONS][function]
-						result_function[NAME] = function
+			match topic.topic:
+				case TopicsNames.EXIT_TOPIC:
+					return exit()
 
-					elif topics[handler_topic][NESTED_FUNCTIONS][function][ADDITIONALLY] > result_function[ADDITIONALLY]:
-						result_function = topics[handler_topic][NESTED_FUNCTIONS][function]
-						result_function[NAME] = function
+				case TopicsNames.NOTIFICATIONS_TOPIC:
+					match topic.functions:
+						case None:
+							waiting_select_action()
 
-				if result_function[NAME]:
-					# если определилась наиболее подходящая функция
-					states.ACTION_WITHOUT_FUNCTION = False
-					return Topic(
-						topic = handler_topic, 
-						functions = result_function[NAME]
-					)
-				else:
-					return Topic()
+						case FunctionsNames.SHOW_NOTIFICATIONS:
+							self.notifications.viewing_notifications()
+		
+						case FunctionsNames.CLEAN_NOTIFICATIONS:
+							self.notifications.clean_notifications()
 
-	else:
-		# обработка темы без функции (действие для темы)
-		if not states.WAITING_RESPONSE:
-			# Если ассистент не ожидает ответа в виде какого-то действия, то не дожидаться конечного результата распознавания речи
-			states.ACTION_WITHOUT_FUNCTION = True
+						case FunctionsNames.UPDATE_NOTIFICATIONS:
+							self.settings.update_notifications()
 
-		return Topic(
-			topic = handler_topic, 
-			functions = next(iter(topics[handler_topic][NESTED_FUNCTIONS]))
-		)
+				case TopicsNames.TELEGRAM_MESSAGES_TOPIC:
+					match topic.functions:
+						case None:
+							waiting_select_action()
+
+						case FunctionsNames.SHOW_TELEGRAM_MESSAGES:
+							self.notifications.viewing_messages(Services.TELEGRAM)
+						
+						case FunctionsNames.CLEAN_TELEGRAM_MESSAGES:
+							self.notifications.clean_messages(Services.TELEGRAM)
+
+						case FunctionsNames.SEND_TELEGRAM_MESSAGES:
+							pass
+
+				case TopicsNames.VK_MESSAGES_TOPIC:
+					match topic.functions:
+						case None:
+							waiting_select_action()
+
+						case FunctionsNames.SHOW_VK_MESSAGES:
+							self.notifications.viewing_messages(Services.VK)
+						
+						case FunctionsNames.CLEAN_VK_MESSAGES:
+							self.notifications.clean_messages(Services.VK)
+
+						case FunctionsNames.SEND_VK_MESSAGES:
+							pass
+
+				case TopicsNames.SOUND_TOPIC:
+					match topic.functions:
+						case None:
+							waiting_select_action()
+							
+						case FunctionsNames.SOUND_MUTE:
+							states.MUTE = True
+						
+						case FunctionsNames.SOUND_TURN_ON:
+							states.MUTE = False
+
+				case TopicsNames.CONTACTS_TOPIC:
+					match topic.functions:
+						case None:
+							waiting_select_action()
+							
+						case FunctionsNames.UPDATE_CONTACTS:
+							self.settings.update_contacts()
+						
+						case FunctionsNames.SHOW_CONTACTS:
+							pass
+
+						case FunctionsNames.ADD_CONTACT:
+							pass
+
+						case FunctionsNames.DELETE_CONTACT:
+							pass
+
+				case _:
+					nothing_found()
