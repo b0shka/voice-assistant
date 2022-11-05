@@ -1,6 +1,6 @@
+dependency-injector==4.40.0
 environs==9.5.0
 PyAudio==0.2.12
 speechkit==2.1.1
 Telethon==1.25.2
 vk-api==11.9.4
-vosk==0.3.44

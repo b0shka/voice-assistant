@@ -1,5 +1,4 @@
 from telethon.sync import TelegramClient, events
-from common.config import *
 from common.exceptions.telegram import *
 from domain.enum_class.Errors import Errors
 from domain.named_tuple.UserServiceData import TelegramUserData
@@ -9,14 +8,10 @@ from app.functions.messages import Messages
 
 class Telegram:
 
-	def __init__(self) -> None:
+	def __init__(self, client: TelegramClient, messages: Messages) -> None:
 		try:
-			self.messages = Messages()
-			self.client = TelegramClient(
-				PATH_FILE_SESSION_TELEGRAM, 
-				TELEGRAM_API_ID, 
-				TELEGRAM_API_HASH
-			)
+			self.client = client
+			self.messages = messages
 
 			logger.info("Успешное подключение к telegram api")
 		except Exception as e:

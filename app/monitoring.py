@@ -7,9 +7,9 @@ from app.services.telegram.telegram import Telegram
 
 class Monitoring:
 
-	def __init__(self) -> None:
-		self.vk = VK()
-		self.telegram = Telegram()
+	def __init__(self, vk: VK, telegram: Telegram) -> None:
+		self.vk = vk
+		self.telegram = telegram
 
 
 	def start(self) -> None:

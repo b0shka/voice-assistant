@@ -1,6 +1,5 @@
-import vk_api
+from vk_api import VkApi
 from vk_api.longpoll import VkLongPoll, VkEventType
-from common.config import *
 from common.exceptions.vk import *
 from domain.enum_class.Errors import Errors
 from domain.named_tuple.UserServiceData import VKUserData
@@ -10,11 +9,16 @@ from app.functions.messages import Messages
 
 class VK:
 
-	def __init__(self) -> None:
+	def __init__(
+		self, 
+		session: VkApi, 
+		longpoll: VkLongPoll, 
+		messages: Messages
+	) -> None:
 		try:
-			self.messages = Messages()
-			self.session = vk_api.VkApi(token=VK_TOKEN)
-			self.longpoll = VkLongPoll(self.session)
+			self.messages = messages
+			self.session = session
+			self.longpoll = longpoll
 
 			logger.info('Успешное подключение к vk api')
 		except Exception as e:
