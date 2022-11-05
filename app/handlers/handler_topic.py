@@ -5,7 +5,6 @@ from domain.enum_class.ActionsAssistant import ActionsAssistant
 from domain.enum_class.TopicsNames import TopicsNames
 from domain.enum_class.FunctionsNames import FunctionsNames
 from app.functions.communications import *
-from app.handlers.config import *
 from app.functions.notifications import Notifications
 from app.functions.settings import Settings
 

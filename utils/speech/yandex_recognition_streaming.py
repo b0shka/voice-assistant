@@ -1,9 +1,9 @@
 import pyaudio
+from speechkit import DataStreamingRecognition
 from common.states import states
+from utils.speech.config import session
 from domain.named_tuple.Command import Command
 from domain.enum_class.CommandMode import CommandMode
-from speechkit import DataStreamingRecognition
-from utils.speech.config import session
 
 
 sample_rate = 16000

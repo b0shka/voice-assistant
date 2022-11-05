@@ -9,8 +9,11 @@ from di.handlers_container import HandlersContainer
 
 class Application(containers.DeclarativeContainer):
 
+	config = providers.Configuration()
+
 	repository = providers.Container(
-		RepositoryContainer
+		RepositoryContainer,
+		config = config
 	)
 
 	functions = providers.Container(
@@ -25,7 +28,8 @@ class Application(containers.DeclarativeContainer):
 
 	services = providers.Container(
 		ServicesContainer,
-		functions = functions
+		functions = functions,
+		config = config
 	)
 
 	assistant = providers.Singleton(

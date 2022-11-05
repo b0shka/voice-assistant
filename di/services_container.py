@@ -2,25 +2,25 @@ from vk_api import VkApi
 from vk_api.longpoll import VkLongPoll
 from telethon.sync import TelegramClient
 from dependency_injector import containers, providers
-from common.config import *
 from app.services.telegram.telegram import Telegram
 from app.services.vk.vk import VK
 
 
 class ServicesContainer(containers.DeclarativeContainer):
 
+	config = providers.Configuration()
 	functions = providers.DependenciesContainer()
 
 	telegram_client = providers.Singleton(
 		TelegramClient,
-		PATH_FILE_SESSION_TELEGRAM, 
-		TELEGRAM_API_ID, 
-		TELEGRAM_API_HASH
+		config.services.path_file_session_telegram, 
+		config.services.telegram_api_id, 
+		config.services.telegram_api_hash
 	)
 
 	vk_session = providers.Singleton(
 		VkApi,
-		token = VK_TOKEN
+		token = config.services.vk_token
 	)
 
 	vk_longpoll = providers.Singleton(

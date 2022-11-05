@@ -1,7 +1,7 @@
 import pyaudio
 from speechkit import SpeechSynthesis
-from utils.speech.config import session
 from common.states import states
+from utils.speech.config import session
 
 
 synthesizeAudio = SpeechSynthesis(session)

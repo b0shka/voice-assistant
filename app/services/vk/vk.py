@@ -1,9 +1,9 @@
 from vk_api import VkApi
 from vk_api.longpoll import VkLongPoll, VkEventType
+from utils.logging import logger
 from common.exceptions.vk import *
 from domain.enum_class.Errors import Errors
 from domain.named_tuple.UserServiceData import VKUserData
-from utils.logging import logger
 from app.functions.messages import Messages
 
 

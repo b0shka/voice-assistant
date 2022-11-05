@@ -10,15 +10,15 @@ class FunctionsContainer(containers.DeclarativeContainer):
 	
 	notifications = providers.Singleton(
 		Notifications,
-		db = repository.db_impl
+		db = repository.db_sql
 	)
 
 	messages = providers.Singleton(
 		Messages,
-		db = repository.db_impl
+		db = repository.db_sql
 	)
 
 	settings = providers.Singleton(
 		Settings,
-		db = repository.db_impl
+		db = repository.db_sql
 	)

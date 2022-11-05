@@ -1,8 +1,8 @@
 from telethon.sync import TelegramClient, events
+from utils.logging import logger
 from common.exceptions.telegram import *
 from domain.enum_class.Errors import Errors
 from domain.named_tuple.UserServiceData import TelegramUserData
-from utils.logging import logger
 from app.functions.messages import Messages
 
 

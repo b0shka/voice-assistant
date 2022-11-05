@@ -1,13 +1,12 @@
-from common.config import *
 from common.states import states
+from common.exceptions.messages import CantFoundContact
+from common.exceptions.vk import CantGetUserData
 from domain.named_tuple.Contact import Contact
 from domain.named_tuple.Message import Message
 from domain.enum_class.Errors import Errors
 from domain.enum_class.Services import Services
 from domain.repository.database_sqlite import DatabaseSQLite
 from utils.speech.yandex_synthesis import synthesis_text
-from common.exceptions.messages import CantFoundContact
-from common.exceptions.vk import CantGetUserData
 from app.functions.communications import say_error
 
 
@@ -34,9 +33,12 @@ class Messages:
 		'''Обработка полученного нового сообщения из Телеграм'''
 
 		try:
-			# тут будет ошибка, если сообщение отправлено не от человека, а от канала или чата
 			from_id = int(message['from_id']['user_id'])
 			contact = self.get_contact_by_from_id(from_id, Services.TELEGRAM)
+
+		except TypeError:
+			# если сообщение отправлено не от человека, а от канала или чата
+			pass
 
 		except CantFoundContact:
 			# сообщение не от контакта

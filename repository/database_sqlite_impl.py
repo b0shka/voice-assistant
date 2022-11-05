@@ -1,16 +1,15 @@
-import sqlite3
-from common.config import *
+from sqlite3 import Connection
+from utils.logging import logger
 from common.exceptions.database import *
 from domain.enum_class.Errors import Errors
 from domain.enum_class.Tables import TablesDB
 from domain.named_tuple.Message import Message
 from domain.repository.database_sqlite import DatabaseSQLite
-from utils.logging import logger
 
 
 class DatabaseSQLiteImpl(DatabaseSQLite):
 	
-	def __init__(self, conn: sqlite3.Connection) -> None:
+	def __init__(self, conn: Connection) -> None:
 		try:
 			self._conn = conn
 			self._cursor = self._conn.cursor()
