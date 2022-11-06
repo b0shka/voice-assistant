@@ -6,9 +6,9 @@ from utils.logging import logger
 from utils.speech.yandex_synthesis import synthesis_text
 
 
-def say_error(error: Errors) -> None:
-	logger.error(error.value)
-	synthesis_text(error.value)
+def say_error(error: str) -> None:
+	logger.error(error)
+	synthesis_text(str(error))
 
 
 def exit() -> ActionsAssistant:

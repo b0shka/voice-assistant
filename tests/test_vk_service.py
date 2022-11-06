@@ -4,7 +4,7 @@ from environs import Env
 
 sys.path.append('/home/q/p/projects/voice-assistant/version_2.0')
 from app.services.vk.vk import VK
-from common.exceptions.vk import CantGetUserData, ErrSendVKMessage
+from common.exceptions.messages import CantGetUserData, ErrSendVKMessage
 from domain.named_tuple.UserServiceData import VKUserData
 from domain.enum_class.Errors import Errors
 

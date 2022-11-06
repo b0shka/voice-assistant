@@ -46,4 +46,4 @@ class Contacts:
 
 			return converted_contacts
 		except IndexError:
-			raise ErrConvertContacts(Errors.CONVERT_CONTACTS)
+			raise ErrConvertContacts(Errors.CONVERT_CONTACTS.value)

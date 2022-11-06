@@ -1,6 +1,7 @@
 import pyaudio
 from speechkit import DataStreamingRecognition
 from common.states import states
+from utils.logging import logger
 from utils.speech.config import session
 from domain.named_tuple.Command import Command
 from domain.enum_class.CommandMode import CommandMode
@@ -50,28 +51,32 @@ def listen() -> Command:
 	count_equal_data = 0
 	previous_data = None
 
-	while True:
-		if not states.SYNTHESIS_WORK:
-			for data in data_streaming_recognition.recognize(gen_audio_capture_function):
-				text_command = data[0][0].lower()
+	try:
+		while True:
+			if not states.SYNTHESIS_WORK:
+				for data in data_streaming_recognition.recognize(gen_audio_capture_function):
+					text_command = data[0][0].lower()
 
-				if not states.WAITING_RESULT_RECOGNITION:
-					# если больше не нужно ожидать конечного результата распознавания речи
-					yield Command(None, CommandMode.FINITE)
-					break
-
-				if text_command == previous_data:
-					count_equal_data += 1
-					if count_equal_data == 3:
-						# Если полученный текст повроляется уже 3-ий раз, то останавливать распознавание и возвращать текущий результат
-						yield Command(text_command, CommandMode.FINITE)
-						count_equal_data = 0
-						previous_data = None
+					if not states.WAITING_RESULT_RECOGNITION:
+						# если больше не нужно ожидать конечного результата распознавания речи
+						yield Command(None, CommandMode.FINITE)
 						break
-				else:
-					if data[1]:
-						yield Command(text_command, CommandMode.FINITE)
-					else:
-						yield Command(text_command, CommandMode.INTERMEDIATE)
 
-				previous_data = text_command
+					if text_command == previous_data:
+						count_equal_data += 1
+						if count_equal_data == 3:
+							# Если полученный текст повроляется уже 3-ий раз, то останавливать распознавание и возвращать текущий результат
+							yield Command(text_command, CommandMode.FINITE)
+							count_equal_data = 0
+							previous_data = None
+							break
+					else:
+						if data[1]:
+							yield Command(text_command, CommandMode.FINITE)
+						else:
+							yield Command(text_command, CommandMode.INTERMEDIATE)
+
+					previous_data = text_command
+	
+	except Exception as e:
+		logger.error(e)

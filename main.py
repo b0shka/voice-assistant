@@ -15,8 +15,8 @@ def main() -> None:
 		assistant.start_listen()
 
 	except Exception as e:
-		say_error(Errors.UNDEFIND)
 		logger.error(e)
+		say_error(Errors.UNDEFIND.value)
 
 
 if __name__ == "__main__":

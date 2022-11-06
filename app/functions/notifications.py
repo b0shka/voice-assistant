@@ -72,7 +72,7 @@ class Notifications:
 			)
 
 		except IndexError:
-			raise ErrConvertMessage(Errors.CONVERT_MESSAGE)
+			raise ErrConvertMessage(Errors.CONVERT_MESSAGE.value)
 
 
 	def viewing_notifications(self) -> None:

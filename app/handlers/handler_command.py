@@ -94,7 +94,7 @@ class HandlerCommand:
 
 			return True
 		except KeyError:
-			raise ErrCheckNestedFunctions(Errors.CHECK_NESTED_FUNCIONS)
+			raise ErrCheckNestedFunctions(Errors.CHECK_NESTED_FUNCIONS.value)
 
 
 	def _determinate_topic(self, command: str | None = None) -> Topic:
@@ -134,7 +134,7 @@ class HandlerCommand:
 			return self._processing_functions(topics)
 
 		except KeyError:
-			raise ErrDeterminateTopic(Errors.DETERMINATE_TOPIC)
+			raise ErrDeterminateTopic(Errors.DETERMINATE_TOPIC.value)
 
 
 	def _find_functions_command(self, command: str, topic: TopicsNames) -> bool:

@@ -2,7 +2,7 @@ from vk_api import VkApi
 from vk_api.longpoll import VkLongPoll, VkEventType, Event
 from utils.logging import logger
 from common.states import states
-from common.exceptions.vk import *
+from common.exceptions.messages import *
 from common.exceptions.contacts import CantFoundContact
 from common.exceptions.database import ErrAddVKMessage
 from domain.enum_class.Errors import Errors
@@ -29,7 +29,7 @@ class VK:
 			logger.info('Успешное подключение к vk api')
 		except Exception as e:
 			logger.error(e)
-			say_error(Errors.CONNECT_VK)
+			say_error(Errors.CONNECT_VK.value)
 
 
 	def _get_contact_by_from_id(self, id: int) -> Contact:
@@ -41,16 +41,22 @@ class VK:
 
 
 	def check_new_messages(self) -> None:
-		try:
-			logger.info('Началась проверка на новые сообщения в ВКонтакте')
+		'''Мониторинг новых сообщений в ВКонтакте'''
 
+		logger.info('Началась проверка на новые сообщения в ВКонтакте')
+
+		try:
 			for event in self.longpoll.listen():
 				if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
-					self.processing_new_message(event)
+					try:
+						self.processing_new_message(event)
+					except Exception as e:
+						logger.error(e)
+						say_error(Errors.PROCESSING_NEW_VK_MESSAGES.value)
 
 		except Exception as e:
 			logger.error(e)
-			say_error(Errors.GET_NEW_VK_MESSAGES)
+			say_error(Errors.MONITORING_NEW_VK_MESSAGES.value)
 
 
 	def processing_new_message(self, event: Event) -> None:
@@ -76,7 +82,7 @@ class VK:
 			except CantFoundContact:
 				# сообщение не от контакта
 				try:
-					user = self.get_user_data_by_id(user_id)
+					user = self._get_user_data_by_id(user_id)
 				except CantGetUserData as e:
 					say_error(e)
 				else:
@@ -110,23 +116,25 @@ class VK:
 
 		except Exception as e:
 			logger.error(e)
-			raise ErrSendVKMessage(Errors.SEND_VK_MESSAGE)
+			raise ErrSendVKMessage(Errors.SEND_VK_MESSAGE.value)
 
 
-	def get_user_data_by_id(self, user_id: int | str) -> VKUserData:
+	def _get_user_data_by_id(self, user_id: int | str) -> VKUserData:
 		try:
 			user_data = self.session.method(
 				"users.get",
 				{"user_ids": user_id}
 			)
-		except Exception as e:
-			logger.error(e)
-			raise CantGetUserData(Errors.GET_USER_DATA_VK_BY_ID)
-		else:
+			
 			if user_data and user_data[0]:
 				return VKUserData(
 					id = user_data[0]["id"],
 					first_name = user_data[0]["first_name"],
 					last_name = user_data[0]["last_name"],
 				)
-			raise CantGetUserData(Errors.FAILED_GET_USER_DATA_VK_BY_ID)
+
+		except Exception as e:
+			logger.error(e)
+			raise CantGetUserData(Errors.GET_USER_DATA_VK_BY_ID.value)
+		else:
+			raise CantGetUserData(Errors.FAILED_GET_USER_DATA_VK_BY_ID.value)
