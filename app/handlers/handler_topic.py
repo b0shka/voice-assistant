@@ -6,7 +6,7 @@ from domain.enum_class.TopicsNames import TopicsNames
 from domain.enum_class.FunctionsNames import FunctionsNames
 from app.functions.communications import *
 from app.functions.notifications import Notifications
-from app.functions.settings import Settings
+from app.functions.contacts import Contacts
 
 
 class HandlerTopic:
@@ -14,10 +14,10 @@ class HandlerTopic:
 	def __init__(
 		self, 
 		notifications: Notifications,
-		settings: Settings
+		contacts: Contacts
 	):
 		self.notifications = notifications
-		self.settings = settings
+		self.contacts = contacts
 
 
 	def processing_topic(self, topic: Topic) -> None | ActionsAssistant:
@@ -109,7 +109,7 @@ class HandlerTopic:
 							waiting_select_action()
 							
 						case FunctionsNames.UPDATE_CONTACTS:
-							self.settings.update_contacts()
+							self.contacts.update_contacts()
 						
 						case FunctionsNames.SHOW_CONTACTS:
 							pass

@@ -1,11 +1,5 @@
 
 
-class ErrConnectVK(Exception):
-	'''Ошибка при подключении к ВКонтакте'''
-
-class ErrGetNewVKMessages(Exception):
-	'''Ошибка при получении нового сообщения в ВКонтакте'''
-
 class ErrSendVKMessage(Exception):
 	'''Ошибка при отправке сообщения в ВКонтакте'''
 

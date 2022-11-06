@@ -3,3 +3,4 @@ logs/
 .env
 utils/speech/models/
 tests/logs/
+.mypy_cache/

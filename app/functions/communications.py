@@ -2,10 +2,12 @@ from random import choice
 from common.states import states
 from domain.enum_class.Errors import Errors
 from domain.enum_class.ActionsAssistant import ActionsAssistant
+from utils.logging import logger
 from utils.speech.yandex_synthesis import synthesis_text
 
 
 def say_error(error: Errors) -> None:
+	logger.error(error.value)
 	synthesis_text(error.value)
 
 

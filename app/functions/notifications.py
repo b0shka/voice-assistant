@@ -1,9 +1,14 @@
 from common.states import states
-from common.exceptions.messages import CantFoundContact
+from common.exceptions.contacts import CantFoundContact
+from common.exceptions.notifications import ErrConvertMessage
+from common.exceptions.database import *
 from domain.repository.database_sqlite import DatabaseSQLite
 from domain.named_tuple.Contact import Contact
+from domain.named_tuple.Message import Message
 from domain.enum_class.Services import Services
+from domain.enum_class.Errors import Errors
 from utils.speech.yandex_synthesis import synthesis_text
+from app.functions.communications import say_error
 
 
 class Notifications:
@@ -12,12 +17,62 @@ class Notifications:
 		self.db = db
 
 
-	def get_contact_by_contact_id(self, id: int) -> Contact:
+	def _get_contact_by_contact_id(self, id: int) -> Contact:
 		for contact in states.CONTACTS:
 			if contact.id == id:
 				return contact
 		else:
 			raise CantFoundContact
+
+		
+	def update_notifications(self, isLauch: bool = False) -> None:
+		'''Добавление уведомлений (если такие существуют) в глобальное состояние'''
+
+		self._update_telegram_messages()
+		self._update_vk_messages()
+			
+		if not isLauch:
+			synthesis_text('Уведомления успешно обновлены')
+
+
+	def _update_vk_messages(self) -> None:
+		try:
+			vk_messages = self.db.get_vk_messages()
+
+			for message in vk_messages:
+				states.NOTIFICATIONS.vk_messages.append(
+					self._convert_message(message)
+				)
+
+		except (ErrGetVKMessages, ErrConvertMessage) as e:
+			say_error(e)
+
+
+	def _update_telegram_messages(self) -> None:
+		try:
+			telegram_messages = self.db.get_telegram_messages()
+
+			for message in telegram_messages:
+				states.NOTIFICATIONS.telegram_messages.append(
+					self._convert_message(message)
+				)
+
+		except (ErrGetTelegramMessages, ErrConvertMessage) as e:
+			say_error(e)
+
+
+	def _convert_message(self, message: list) -> Message:
+		try:
+			return Message(
+				text = message[1],
+				contact_id = message[2],
+				from_id = message[3],
+				first_name = message[4],
+				last_name = message[5]
+			)
+
+		except IndexError:
+			raise ErrConvertMessage(Errors.CONVERT_MESSAGE)
 
 
 	def viewing_notifications(self) -> None:
@@ -52,13 +107,17 @@ class Notifications:
 		states.NOTIFICATIONS.telegram_messages.clear()
 		states.NOTIFICATIONS.vk_messages.clear()
 
-		self.db.delete_telegram_messages()
-		self.db.delete_vk_messages()
+		try:
+			self.db.delete_telegram_messages()
+			self.db.delete_vk_messages()
+		except (ErrDeleteTelegramMessages, ErrDeleteVKMessages) as e:
+			say_error(e)
 
 		synthesis_text('Уведомления очищены')
 
 
 	def viewing_messages(self, service: Services) -> None:
+		###
 		match service:
 			case Services.TELEGRAM:
 				messages = states.NOTIFICATIONS.telegram_messages
@@ -80,7 +139,7 @@ class Notifications:
 			else:
 				if message.contact_id:
 					try:
-						contact = self.get_contact_by_contact_id(message.contact_id)
+						contact = self._get_contact_by_contact_id(message.contact_id)
 					except CantFoundContact:
 						synthesis_text(f'Сообщение от неизвестного контакта. {message.text}')
 						
@@ -106,11 +165,17 @@ class Notifications:
 	def clean_messages(self, service: Services) -> None:
 		match service:
 			case Services.TELEGRAM:
-				self.db.delete_telegram_messages()
+				try:
+					self.db.delete_telegram_messages()
+				except ErrDeleteTelegramMessages as e:
+					say_error(e)
 				states.NOTIFICATIONS.telegram_messages.clear()
 				synthesis_text('Новые сообщения в Телеграм очищены')
 
 			case Services.VK:
-				self.db.delete_vk_messages()
+				try:
+					self.db.delete_vk_messages()
+				except ErrDeleteVKMessages as e:
+					say_error(e)
 				states.NOTIFICATIONS.vk_messages.clear()
 				synthesis_text('Новые сообщения в Вконтакте очищены')

@@ -13,11 +13,12 @@ class DatabaseSQLiteImpl(DatabaseSQLite):
 		try:
 			self._conn = conn
 			self._cursor = self._conn.cursor()
+			self.create_tables()
 
 			logger.info('База данных успешно подключена')
 		except Exception as e:
 			logger.error(e)
-			raise ErrConnectDB(Errors.CONNECT_DB.value)
+			raise ErrConnectDB(Errors.CONNECT_DB)
 
 
 	def create_tables(self) -> None:
@@ -63,7 +64,7 @@ class DatabaseSQLiteImpl(DatabaseSQLite):
 
 		except Exception as e:
 			logger.error(e)
-			raise ErrCreateTables(Errors.CREATE_TABLES.value)
+			raise ErrCreateTables(Errors.CREATE_TABLES)
 
 
 	def get_contacts(self) -> list:
@@ -72,7 +73,7 @@ class DatabaseSQLiteImpl(DatabaseSQLite):
 			return self._cursor.fetchall()
 		except Exception as e:
 			logger.error(e)
-			raise ErrGetContacts(Errors.GET_CONTACTS.value)
+			raise ErrGetContacts(Errors.GET_CONTACTS)
 
 
 	def add_telegram_message(self, message: Message) -> None:
@@ -99,13 +100,13 @@ class DatabaseSQLiteImpl(DatabaseSQLite):
 			self._conn.commit()
 
 			if message.contact_id:
-				logger.info(f"Добавлено новое сообщение из Телеграм от контакта {message.contact_id}")
+				logger.info(f"Добавлено новое сообщение из Телеграм от контакта {message.first_name} {message.last_name}")
 			else:
 				logger.info(f"Добавлено новое сообщение из Телеграм от пользователя {message.first_name} {message.last_name}")
 
 		except Exception as e:
 			logger.error(e)
-			raise ErrAddTelegramMessage(Errors.ADD_TELEGRAM_MESSAGE.value)
+			raise ErrAddTelegramMessage(Errors.ADD_TELEGRAM_MESSAGE)
 
 
 	def add_vk_message(self, message: Message) -> None:
@@ -138,7 +139,7 @@ class DatabaseSQLiteImpl(DatabaseSQLite):
 
 		except Exception as e:
 			logger.error(e)
-			raise ErrAddVKMessage(Errors.ADD_VK_MESSAGE.value)
+			raise ErrAddVKMessage(Errors.ADD_VK_MESSAGE)
 
 
 	def get_telegram_messages(self) -> list:
@@ -147,7 +148,7 @@ class DatabaseSQLiteImpl(DatabaseSQLite):
 			return self._cursor.fetchall()
 		except Exception as e:
 			logger.error(e)
-			raise ErrGetTelegramMessages(Errors.GET_TELEGRAM_MESSAGES.value)
+			raise ErrGetTelegramMessages(Errors.GET_TELEGRAM_MESSAGES)
 
 
 	def get_vk_messages(self) -> list:
@@ -156,7 +157,7 @@ class DatabaseSQLiteImpl(DatabaseSQLite):
 			return self._cursor.fetchall()
 		except Exception as e:
 			logger.error(e)
-			raise ErrGetVKMessages(Errors.GET_VK_MESSAGES.value)
+			raise ErrGetVKMessages(Errors.GET_VK_MESSAGES)
 
 
 	def delete_telegram_messages(self) -> None:
@@ -167,7 +168,7 @@ class DatabaseSQLiteImpl(DatabaseSQLite):
 			logger.info("Удалены все сообщения из Телеграм")
 		except Exception as e:
 			logger.error(e)
-			raise ErrDeleteTelegramMessages(Errors.DELETE_TELEGRAM_MESSAGES.value)
+			raise ErrDeleteTelegramMessages(Errors.DELETE_TELEGRAM_MESSAGES)
 
 
 	def delete_telegram_message_by_id(self, id: int) -> None:
@@ -178,7 +179,7 @@ class DatabaseSQLiteImpl(DatabaseSQLite):
 			logger.info(f"Удалено сообщение из Телеграм по id: {id}")
 		except Exception as e:
 			logger.error(e)
-			raise ErrDeleteTelegramMessage(Errors.DELETE_TELEGRAM_MESSAGE.value)
+			raise ErrDeleteTelegramMessage(Errors.DELETE_TELEGRAM_MESSAGE)
 
 
 	def delete_vk_messages(self) -> None:
@@ -189,7 +190,7 @@ class DatabaseSQLiteImpl(DatabaseSQLite):
 			logger.info("Удалены все сообщения из ВКонтакте")
 		except Exception as e:
 			logger.error(e)
-			raise ErrDeleteVKMessages(Errors.DELETE_TELEGRAM_MESSAGES.value)
+			raise ErrDeleteVKMessages(Errors.DELETE_TELEGRAM_MESSAGES)
 
 
 	def delete_vk_message_by_id(self, id: int) -> None:
@@ -200,4 +201,4 @@ class DatabaseSQLiteImpl(DatabaseSQLite):
 			logger.info(f"Удалено новое сообщение из ВКонтакте по id: {id}")
 		except Exception as e:
 			logger.error(e)
-			raise ErrDeleteVKMessage(Errors.DELETE_TELEGRAM_MESSAGE.value)
+			raise ErrDeleteVKMessage(Errors.DELETE_TELEGRAM_MESSAGE)

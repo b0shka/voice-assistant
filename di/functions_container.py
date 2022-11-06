@@ -1,7 +1,7 @@
 from dependency_injector import containers, providers
 from app.functions.notifications import Notifications
 from app.functions.messages import Messages
-from app.functions.settings import Settings
+from app.functions.contacts import Contacts
 
 
 class FunctionsContainer(containers.DeclarativeContainer):
@@ -18,7 +18,7 @@ class FunctionsContainer(containers.DeclarativeContainer):
 		db = repository.db_sql
 	)
 
-	settings = providers.Singleton(
-		Settings,
+	contacts = providers.Singleton(
+		Contacts,
 		db = repository.db_sql
 	)

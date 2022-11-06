@@ -10,7 +10,7 @@ class HandlersContainer(containers.DeclarativeContainer):
 	handler_topic = providers.Singleton(
 		HandlerTopic,
 		notifications = functions.notifications,
-		settings = functions.settings
+		contacts = functions.contacts
 	)
 
 	handler_command = providers.Singleton(

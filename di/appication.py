@@ -34,7 +34,8 @@ class Application(containers.DeclarativeContainer):
 
 	assistant = providers.Singleton(
 		Assistant,
-		settings = functions.settings,
+		contacts = functions.contacts,
+		notifications = functions.notifications,
 		handler_command = handlers.handler_command
 	)
 
