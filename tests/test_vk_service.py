@@ -2,7 +2,7 @@ import sys
 from unittest import TestCase, main
 from environs import Env
 
-sys.path.append('/home/q/p/projects/voice-assistant/version_2.0')
+sys.path.append('/home/q/p/projects/voice-assistant/version_2.0/src')
 from app.services.vk.vk import VK
 from common.exceptions.messages import CantGetUserData, ErrSendVKMessage
 from domain.named_tuple.UserServiceData import VKUserData

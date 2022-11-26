@@ -206,7 +206,7 @@ class HandlerCommand:
 	def _processing_functions(self, topics: dict) -> Topic:
 		'''Обработка возможных функций темы и выявление наиболее подходящей'''
 
-		if len(topics) == 0:
+		if not topics:
 			return Topic()
 		
 		list_topics = tuple(topics.keys())

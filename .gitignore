@@ -1,6 +1,7 @@
 settings/
-logs/
 .env
-utils/speech/models/
 tests/logs/
 .mypy_cache/
+pyrightconfig.json
+src/utils/speech/models/
+src/logs/

@@ -53,6 +53,9 @@ YANDEX_CLOUD_API_KEY - yandex cloud developer api key, for working with speech s
 
 ---
 ## Usage
+```
+cd src/
+```
 #### Usage on Linux or Mac
 ```
 python3 ./main.py
@@ -63,6 +66,8 @@ python3 ./main.py
 python ./main.py
 ```
 
+View of the main application window
+![alt text](img/app_chat.png)
 
 ---
 ## Additionally

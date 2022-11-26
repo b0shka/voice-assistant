@@ -1,7 +1,7 @@
 import sys
 from unittest import TestCase, main
 
-sys.path.append('/home/q/p/projects/voice-assistant/version_2.0')
+sys.path.append('/home/q/p/projects/voice-assistant/version_2.0/src')
 from domain.enum_class.Services import Services
 from app.functions.messages import Messages
 from app.assistant import configure_assistant

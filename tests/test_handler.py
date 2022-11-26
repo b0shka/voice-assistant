@@ -1,7 +1,7 @@
 import sys
 from unittest import TestCase, main
 
-sys.path.append('/home/q/p/projects/voice-assistant/version_2.0')
+sys.path.append('/home/q/p/projects/voice-assistant/version_2.0/src')
 from common.states import states
 from domain.enum_class.TopicsNames import TopicsNames
 from domain.enum_class.FunctionsNames import FunctionsNames
