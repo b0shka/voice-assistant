@@ -8,7 +8,7 @@ class Assistant(QObject):
 
     def __init__(self):
         QObject.__init__(self)
-        self.commands = ["Мои уведомления", "Сообщения в Телеграм"]
+        self.commands = []
 
 
 if __name__ == "__main__":

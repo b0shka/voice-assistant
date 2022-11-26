@@ -5,3 +5,5 @@ tests/logs/
 pyrightconfig.json
 src/utils/speech/models/
 src/logs/
+src/ui/voice-assistant.pyproject
+src/ui/voice-assistant.pyproject.user
